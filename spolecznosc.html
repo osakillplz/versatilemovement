@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Społeczność — Versatile Movement</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;600;700;900&family=Bebas+Neue&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --cream: #EDEAE0;
+    --black: #0A0A0A;
+    --white: #FAFAF7;
+    --font-display: 'Bebas Neue', sans-serif;
+    --font-mono: 'Space Mono', 'Courier New', monospace;
+    --font-body: 'Nunito Sans', sans-serif;
+  }
+  html { scroll-behavior: smooth; overflow-x: hidden; }
+  body { background: var(--cream); color: var(--black); font-family: var(--font-body); cursor: none; overflow-x: hidden; }
+
+  /* CURSOR */
+  .cursor { position: fixed; width: 10px; height: 10px; background: var(--black); border-radius: 50%; pointer-events: none; z-index: 9999; transform: translate(-50%,-50%); transition: transform 0.1s ease; }
+  .cursor-ring { position: fixed; width: 36px; height: 36px; border: 1.5px solid var(--black); border-radius: 50%; pointer-events: none; z-index: 9998; transform: translate(-50%,-50%); transition: all 0.18s ease; opacity: 0.5; }
+  ::-webkit-scrollbar { width: 3px; }
+  ::-webkit-scrollbar-track { background: var(--cream); }
+  ::-webkit-scrollbar-thumb { background: var(--black); }
+
+  /* NAV */
+  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 24px 48px; transition: background 0.4s ease, padding 0.4s ease; }
+  nav.scrolled { background: rgba(237,234,224,0.92); backdrop-filter: blur(12px); padding: 16px 48px; border-bottom: 1px solid rgba(10,10,10,0.08); }
+  .nav-logo { font-family: var(--font-display); font-size: 22px; letter-spacing: 4px; color: var(--black); text-decoration: none; display: flex; flex-direction: row; align-items: center; gap: 10px; line-height: 1; }
+  .nav-logo-img { height: 32px; width: auto; opacity: 0.85; }
+  .nav-logo-text { display: flex; flex-direction: column; }
+  .nav-logo-text span { font-size: 10px; letter-spacing: 6px; font-family: var(--font-mono); font-weight: 400; opacity: 0.5; margin-top: 2px; }
+  .nav-links { display: flex; gap: 36px; list-style: none; }
+  .nav-links a { font-family: var(--font-mono); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--black); text-decoration: none; opacity: 0.6; transition: opacity 0.2s; position: relative; }
+  .nav-links a::after { content: ''; position: absolute; bottom: -3px; left: 0; right: 0; height: 1px; background: var(--black); transform: scaleX(0); transform-origin: left; transition: transform 0.3s ease; }
+  .nav-links a:hover { opacity: 1; }
+  .nav-links a:hover::after { transform: scaleX(1); }
+  .nav-links a.active { opacity: 1; }
+  .nav-links a.active::after { transform: scaleX(1); }
+  .nav-links .nav-shop a { opacity: 1; background: var(--black); color: var(--cream); padding: 8px 18px; letter-spacing: 2px; transition: background 0.2s, color 0.2s; }
+  .nav-links .nav-shop a:hover { background: transparent; color: var(--black); border: 1px solid var(--black); }
+  .nav-links .nav-shop a::after { display: none; }
+  .hamburger { display: none; flex-direction: column; gap: 5px; cursor: none; background: none; border: none; padding: 4px; }
+  .hamburger span { display: block; width: 28px; height: 1.5px; background: var(--black); transition: all 0.3s; }
+  .mobile-menu { display: none; position: fixed; inset: 0; background: var(--black); z-index: 99; flex-direction: column; justify-content: center; align-items: center; gap: 32px; }
+  .mobile-menu.open { display: flex; }
+  .mobile-menu a { font-family: var(--font-display); font-size: clamp(36px,8vw,72px); color: var(--cream); text-decoration: none; letter-spacing: 4px; transition: opacity 0.2s; opacity: 0.8; }
+  .mobile-menu a:hover { opacity: 1; }
+  .mobile-close { position: absolute; top: 28px; right: 48px; font-family: var(--font-mono); font-size: 11px; color: var(--cream); cursor: none; background: none; border: none; letter-spacing: 2px; opacity: 0.6; }
+
+  /* REVEAL */
+  .reveal { opacity: 0; transform: translateY(40px); transition: opacity 0.9s ease, transform 0.9s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  .reveal-delay-1 { transition-delay: 0.15s; }
+  .reveal-delay-2 { transition-delay: 0.3s; }
+  .reveal-delay-3 { transition-delay: 0.45s; }
+  .reveal-delay-4 { transition-delay: 0.6s; }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes spinSlow { to { transform: translate(-50%,-50%) rotate(360deg); } }
+
+  /* SHARED TYPOGRAPHY */
+  .section-label { font-family: var(--font-mono); font-size: 9px; letter-spacing: 4px; text-transform: uppercase; opacity: 0.35; margin-bottom: 16px; display: block; }
+  .section-num { font-family: var(--font-mono); font-size: 10px; opacity: 0.2; margin-right: 10px; }
+  h2 { font-family: var(--font-display); font-size: clamp(44px,6vw,86px); line-height: 0.95; letter-spacing: 1px; }
+  .outline { color: transparent; -webkit-text-stroke: 1.5px var(--black); }
+  .outline-cream { color: transparent; -webkit-text-stroke: 1.5px var(--cream); }
+  .body-text { font-size: clamp(14px,1.5vw,17px); line-height: 1.85; opacity: 0.7; margin-bottom: 20px; }
+
+  /* BUTTONS */
+  .btn-primary { display: inline-block; padding: 14px 36px; background: var(--black); color: var(--cream); font-family: var(--font-mono); font-size: 10px; letter-spacing: 3px; text-transform: uppercase; text-decoration: none; border: 1.5px solid var(--black); transition: all 0.25s; }
+  .btn-primary:hover { background: transparent; color: var(--black); }
+  .btn-secondary { display: inline-block; padding: 14px 36px; background: transparent; color: var(--black); font-family: var(--font-mono); font-size: 10px; letter-spacing: 3px; text-transform: uppercase; text-decoration: none; border: 1.5px solid var(--black); transition: all 0.25s; }
+  .btn-secondary:hover { background: var(--black); color: var(--cream); }
+  .btn-cream { display: inline-block; padding: 14px 36px; background: var(--cream); color: var(--black); font-family: var(--font-mono); font-size: 10px; letter-spacing: 3px; text-transform: uppercase; text-decoration: none; border: 1.5px solid var(--cream); transition: all 0.25s; }
+  .btn-cream:hover { background: transparent; color: var(--cream); }
+  .btn-outline-cream { display: inline-block; padding: 14px 36px; background: transparent; color: var(--cream); font-family: var(--font-mono); font-size: 10px; letter-spacing: 3px; text-transform: uppercase; text-decoration: none; border: 1.5px solid rgba(237,234,224,0.3); transition: all 0.25s; }
+  .btn-outline-cream:hover { border-color: var(--cream); }
+
+  /* ======================== PAGE HERO (dark) ======================== */
+  .page-hero {
+    background: var(--black);
+    min-height: 60vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 0 48px 72px;
+    position: relative;
+    overflow: hidden;
+  }
+  .page-hero-logo-bg {
+    position: absolute;
+    width: clamp(300px,50vw,560px);
+    height: clamp(300px,50vw,560px);
+    top: 50%; right: -80px;
+    transform: translateY(-50%);
+    opacity: 0.04;
+    pointer-events: none;
+    filter: invert(1);
+    object-fit: contain;
+    animation: spinSlow 80s linear infinite;
+  }
+  .page-hero-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 5px; text-transform: uppercase; color: var(--cream); opacity: 0.35; margin-bottom: 20px; display: block; animation: fadeUp 0.8s 0.2s both; }
+  .page-hero-title { font-family: var(--font-display); font-size: clamp(80px,14vw,180px); line-height: 0.9; letter-spacing: 2px; color: var(--cream); animation: fadeUp 0.8s 0.3s both; }
+  .page-hero-sub { font-family: var(--font-mono); font-size: clamp(10px,1.2vw,13px); letter-spacing: 2px; line-height: 1.9; color: var(--cream); opacity: 0.45; text-transform: uppercase; max-width: 480px; margin-top: 20px; animation: fadeUp 0.8s 0.5s both; }
+
+  /* ======================== 1. INTRO STRIP ======================== */
+  .intro-strip {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: 280px;
+  }
+  .intro-strip-text {
+    background: var(--cream);
+    padding: 72px 48px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 20px;
+  }
+  .intro-strip-quote {
+    background: var(--black);
+    padding: 72px 48px;
+    display: flex;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .intro-strip-quote::before {
+    content: '"';
+    position: absolute;
+    font-family: var(--font-display);
+    font-size: 300px;
+    color: rgba(255,255,255,0.03);
+    top: -60px; left: -20px;
+    line-height: 1;
+    pointer-events: none;
+  }
+  .intro-strip-quote p {
+    font-family: var(--font-display);
+    font-size: clamp(22px,3vw,38px);
+    letter-spacing: 1px;
+    line-height: 1.15;
+    color: var(--cream);
+    position: relative;
+    z-index: 1;
+  }
+  .intro-strip-quote p em { font-style: normal; color: transparent; -webkit-text-stroke: 1px var(--cream); }
+
+  /* ======================== 2. WARTOŚCI COMMUNITY ======================== */
+  .community-values { padding: 120px 48px; background: var(--white); }
+  .community-values h2 { margin-bottom: 64px; }
+  .values-big-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+  }
+  .val-big-card {
+    padding: 52px 40px;
+    background: rgba(10,10,10,0.03);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    transition: background 0.3s, transform 0.3s;
+    cursor: none;
+    position: relative;
+    overflow: hidden;
+  }
+  .val-big-card:hover { background: var(--black); transform: translateY(-4px); }
+  .val-big-card:hover .val-title,
+  .val-big-card:hover .val-desc { color: var(--cream); }
+  .val-big-card:hover .val-num { color: rgba(237,234,224,0.08); }
+  .val-num { font-family: var(--font-display); font-size: 96px; line-height: 1; color: rgba(10,10,10,0.05); position: absolute; top: 10px; right: 20px; transition: color 0.3s; }
+  .val-icon { font-family: var(--font-mono); font-size: 9px; letter-spacing: 3px; text-transform: uppercase; opacity: 0.3; }
+  .val-title { font-family: var(--font-display); font-size: clamp(24px,3vw,36px); letter-spacing: 2px; transition: color 0.3s; }
+  .val-divider { width: 40px; height: 1px; background: rgba(10,10,10,0.15); transition: background 0.3s; }
+  .val-big-card:hover .val-divider { background: rgba(237,234,224,0.2); }
+  .val-desc { font-size: 13px; line-height: 1.8; opacity: 0.6; transition: color 0.3s; }
+
+  /* ======================== 3. MANIFESTO STRIP ======================== */
+  .manifesto-strip {
+    background: var(--black);
+    padding: 100px 48px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .manifesto-strip-logo {
+    position: absolute;
+    width: clamp(280px,40vw,500px);
+    height: clamp(280px,40vw,500px);
+    top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    opacity: 0.04;
+    pointer-events: none;
+    filter: invert(1);
+    animation: spinSlow 80s linear infinite;
+    object-fit: contain;
+  }
+  .manifesto-strip-label { font-family: var(--font-mono); font-size: 9px; letter-spacing: 5px; text-transform: uppercase; color: var(--cream); opacity: 0.3; display: block; margin-bottom: 24px; }
+  .manifesto-strip-text { font-family: var(--font-display); font-size: clamp(32px,5vw,68px); letter-spacing: 2px; line-height: 1.05; color: var(--cream); max-width: 800px; margin: 0 auto 32px; position: relative; z-index: 1; }
+  .manifesto-strip-sub { font-family: var(--font-mono); font-size: 11px; letter-spacing: 1px; line-height: 1.9; color: var(--cream); opacity: 0.4; max-width: 480px; margin: 0 auto; position: relative; z-index: 1; }
+
+  /* ======================== 4. KTO DO NAS TRAFIA ======================== */
+  .audience { padding: 120px 48px; }
+  .audience-header { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; margin-bottom: 72px; align-items: end; }
+  .audience-sub { font-size: clamp(14px,1.5vw,17px); line-height: 1.85; opacity: 0.65; }
+  .audience-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
+  .audience-card {
+    border: 1px solid rgba(10,10,10,0.08);
+    padding: 40px 32px;
+    display: flex; flex-direction: column; gap: 12px;
+    transition: border-color 0.3s, background 0.3s;
+    cursor: none;
+    position: relative;
+  }
+  .audience-card:hover { border-color: var(--black); background: var(--black); }
+  .audience-card:hover .aud-name,
+  .audience-card:hover .aud-desc { color: var(--cream); }
+  .audience-card:hover .aud-num { opacity: 0.2; color: var(--cream); }
+  .aud-num { font-family: var(--font-mono); font-size: 9px; opacity: 0.2; letter-spacing: 2px; transition: color 0.3s; }
+  .aud-name { font-family: var(--font-display); font-size: clamp(20px,2.5vw,30px); letter-spacing: 2px; transition: color 0.3s; }
+  .aud-desc { font-size: 12px; line-height: 1.7; opacity: 0.5; transition: color 0.3s; }
+
+  /* ======================== 5. TICKER ======================== */
+  .ticker { overflow: hidden; padding: 14px 0; background: var(--black); }
+  .ticker-inner { display: flex; gap: 80px; animation: ticker 25s linear infinite; white-space: nowrap; width: max-content; }
+  .ticker-inner span { font-family: var(--font-display); font-size: 14px; letter-spacing: 6px; color: var(--cream); opacity: 0.7; }
+  .ticker-inner .dot { opacity: 0.25; }
+  @keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+  /* ======================== 6. GDZIE JESTEŚMY ======================== */
+  .gdzie { padding: 120px 48px; background: var(--cream); display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+  .gdzie-text {}
+  .gdzie-stats { display: flex; flex-direction: column; gap: 2px; }
+  .gdzie-stat { display: flex; align-items: center; gap: 28px; padding: 28px 32px; background: rgba(10,10,10,0.03); transition: background 0.3s; }
+  .gdzie-stat:hover { background: var(--black); color: var(--cream); }
+  .gdzie-stat:hover .gdzie-stat-num,
+  .gdzie-stat:hover .gdzie-stat-label { color: var(--cream); }
+  .gdzie-stat-num { font-family: var(--font-display); font-size: clamp(36px,4vw,52px); letter-spacing: 2px; min-width: 120px; transition: color 0.3s; }
+  .gdzie-stat-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; opacity: 0.5; transition: color 0.3s; }
+
+  /* ======================== 7. CTA ======================== */
+  .cta-section { background: var(--black); padding: 100px 48px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 24px; position: relative; overflow: hidden; }
+  .cta-logo { width: 80px; height: 80px; opacity: 0.12; filter: invert(1); object-fit: contain; margin-bottom: 8px; }
+  .cta-label { font-family: var(--font-mono); font-size: 9px; letter-spacing: 5px; text-transform: uppercase; color: var(--cream); opacity: 0.3; }
+  .cta-title { font-family: var(--font-display); font-size: clamp(36px,6vw,80px); color: var(--cream); line-height: 1.0; letter-spacing: 2px; }
+  .cta-sub { font-family: var(--font-mono); font-size: 11px; letter-spacing: 1px; line-height: 1.9; color: var(--cream); opacity: 0.4; max-width: 420px; }
+  .cta-buttons { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-top: 16px; }
+  .cta-section::after { content: '#versatilemovement'; position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); font-family: var(--font-mono); font-size: 9px; letter-spacing: 3px; color: var(--cream); opacity: 0.12; }
+
+  /* FOOTER */
+  footer { background: var(--black); color: var(--cream); padding: 64px 48px 32px; }
+  .footer-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 64px; gap: 48px; }
+  .footer-logo { font-family: var(--font-display); font-size: 28px; letter-spacing: 6px; margin-bottom: 8px; display: block; }
+  .footer-tagline { font-family: var(--font-mono); font-size: 9px; letter-spacing: 2px; opacity: 0.3; max-width: 280px; line-height: 1.8; text-transform: uppercase; }
+  .footer-links { display: flex; gap: 64px; flex-wrap: wrap; }
+  .footer-col h4 { font-family: var(--font-mono); font-size: 9px; letter-spacing: 3px; text-transform: uppercase; opacity: 0.3; margin-bottom: 20px; }
+  .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .footer-col a { color: var(--cream); text-decoration: none; font-family: var(--font-mono); font-size: 11px; letter-spacing: 1px; opacity: 0.55; transition: opacity 0.2s; }
+  .footer-col a:hover { opacity: 1; }
+  .footer-bottom { border-top: 1px solid rgba(237,234,224,0.08); padding-top: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+  .footer-copy { font-family: var(--font-mono); font-size: 9px; opacity: 0.25; letter-spacing: 1px; }
+  .footer-motto { font-family: var(--font-display); font-size: 13px; letter-spacing: 4px; opacity: 0.3; }
+
+  /* RESPONSIVE */
+  @media (max-width: 1024px) {
+    .intro-strip, .audience-header, .gdzie { grid-template-columns: 1fr; }
+    .values-big-grid, .audience-grid { grid-template-columns: repeat(2,1fr); }
+  }
+  @media (max-width: 768px) {
+    nav { padding: 20px 24px; }
+    nav.scrolled { padding: 14px 24px; }
+    .nav-links { display: none; }
+    .hamburger { display: flex; }
+    .page-hero, .intro-strip-text, .intro-strip-quote,
+    .community-values, .manifesto-strip, .audience,
+    .gdzie, .cta-section { padding-left: 24px; padding-right: 24px; }
+    .values-big-grid, .audience-grid { grid-template-columns: 1fr; }
+    .intro-strip { grid-template-columns: 1fr; }
+    .mobile-close { right: 24px; }
+    footer { padding: 48px 24px 28px; }
+    .footer-top { flex-direction: column; }
+    .footer-links { gap: 40px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- NAV -->
+<nav id="navbar">
+  <a href="index.html" class="nav-logo">
+    <img src="Versatile_Movement_Circle_Logo.png" alt="VM" class="nav-logo-img">
+    <div class="nav-logo-text">VERSATILE <span>MOVEMENT</span></div>
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="o-nas.html">O nas</a></li>
+    <li><a href="spolecznosc.html" class="active">Społeczność</a></li>
+    <li><a href="zespol.html">Zespół</a></li>
+    <li><a href="blog.html">Blog</a></li>
+    <li><a href="kontakt.html">Kontakt</a></li>
+    <li class="nav-shop"><a href="index.html#sklep">Sklep</a></li>
+  </ul>
+  <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+</nav>
+
+<div class="mobile-menu" id="mobileMenu">
+  <button class="mobile-close" id="mobileClose">ZAMKNIJ</button>
+  <a href="index.html" onclick="closeMobile()">HOME</a>
+  <a href="o-nas.html" onclick="closeMobile()">O NAS</a>
+  <a href="spolecznosc.html" onclick="closeMobile()">SPOŁECZNOŚĆ</a>
+  <a href="zespol.html" onclick="closeMobile()">ZESPÓŁ</a>
+  <a href="blog.html" onclick="closeMobile()">BLOG</a>
+  <a href="kontakt.html" onclick="closeMobile()">KONTAKT</a>
+  <a href="index.html#sklep" onclick="closeMobile()">SKLEP</a>
+</div>
+
+<!-- ======================== HERO ======================== -->
+<section class="page-hero">
+  <img src="Versatile_Movement_Circle_Logo.png" alt="" class="page-hero-logo-bg" aria-hidden="true">
+  <span class="page-hero-label">03 — Community / Ruch</span>
+  <h1 class="page-hero-title">SPOŁECZ<span class="outline-cream">NOŚĆ</span></h1>
+  <p class="page-hero-sub">Budujemy środowisko ludzi, którzy trenują świadomie — dla zdrowia, wolności ruchu i odkrywania swojego potencjału.</p>
+</section>
+
+<!-- ======================== INTRO STRIP ======================== -->
+<div class="intro-strip">
+  <div class="intro-strip-text">
+    <span class="section-label reveal"><span class="section-num">01</span>Kim jesteśmy razem</span>
+    <p class="body-text reveal reveal-delay-1">Versatile Movement to więcej niż marka — to społeczność ludzi, którzy rozumieją, że ruch zmienia życie. Łączymy pasjonatów ruchu, sportowców, fizjoterapeutów i trenerów wokół jednej idei: trenować świadomie, wszechstronnie i z radością.</p>
+  </div>
+  <div class="intro-strip-quote reveal">
+    <p>Ruch to<br><em>podróż</em><br>w głąb siebie.</p>
+  </div>
+</div>
+
+<!-- ======================== WARTOŚCI ======================== -->
+<section class="community-values">
+  <span class="section-label reveal"><span class="section-num">02</span>Wartości / Filary</span>
+  <h2 class="reveal">NASZE<br><span class="outline">FILARY</span></h2>
+  <div class="values-big-grid">
+    <div class="val-big-card reveal">
+      <span class="val-num">01</span>
+      <span class="val-icon">Community</span>
+      <div class="val-title">WSPARCIE</div>
+      <div class="val-divider"></div>
+      <div class="val-desc">Jesteśmy silniejsi razem. Dzielimy się wiedzą, motywujemy i inspirujemy — bez oceniania, bez hierarchii. Każdy zaczyna od zera.</div>
+    </div>
+    <div class="val-big-card reveal reveal-delay-1">
+      <span class="val-num">02</span>
+      <span class="val-icon">Knowledge</span>
+      <div class="val-title">EDUKACJA</div>
+      <div class="val-divider"></div>
+      <div class="val-desc">Warsztaty, wyzwania treningowe, filmy instruktażowe i blog. Wiedza dostępna dla każdego — niezależnie od poziomu zaawansowania.</div>
+    </div>
+    <div class="val-big-card reveal reveal-delay-2">
+      <span class="val-num">03</span>
+      <span class="val-icon">Authenticity</span>
+      <div class="val-title">AUTENTYCZNOŚĆ</div>
+      <div class="val-divider"></div>
+      <div class="val-desc">Pokazujemy proces, nie tylko efekty. Real movement, real progress. Nie idealizujemy — inspirujemy własnym przykładem.</div>
+    </div>
+    <div class="val-big-card reveal">
+      <span class="val-num">04</span>
+      <span class="val-icon">Freedom</span>
+      <div class="val-title">WOLNOŚĆ</div>
+      <div class="val-divider"></div>
+      <div class="val-desc">Trening bez ograniczeń miejsca, czasu i zasobów. W parku, w domu, w podróży — ruch nie zna granic.</div>
+    </div>
+    <div class="val-big-card reveal reveal-delay-1">
+      <span class="val-num">05</span>
+      <span class="val-icon">Exploration</span>
+      <div class="val-title">EKSPLORACJA</div>
+      <div class="val-divider"></div>
+      <div class="val-desc">Trening jako przygoda. Odkrywamy nowe formy ruchu, niszowy sprzęt i metody, które rozwijają ciało i umysł.</div>
+    </div>
+    <div class="val-big-card reveal reveal-delay-2">
+      <span class="val-num">06</span>
+      <span class="val-icon">Harmony</span>
+      <div class="val-title">HARMONIA</div>
+      <div class="val-divider"></div>
+      <div class="val-desc">Holistyczne podejście do zdrowia. Harmonia ciała, umysłu i ducha. Trening jako inwestycja w zdrowie na lata, nie tylko estetyka.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================== MANIFESTO ======================== -->
+<div class="manifesto-strip">
+  <img src="Versatile_Movement_Circle_Logo.png" alt="" class="manifesto-strip-logo" aria-hidden="true">
+  <span class="manifesto-strip-label reveal">Nasza misja</span>
+  <p class="manifesto-strip-text reveal reveal-delay-1">
+    Tworzyć społeczność ludzi,<br>którzy trenują świadomie — dla zdrowia,<br><span class="outline-cream">wolności ruchu</span> i odkrywania potencjału.
+  </p>
+  <p class="manifesto-strip-sub reveal reveal-delay-2">Dołącz do rosnącej społeczności ruchu z całej Polski.</p>
+</div>
+
+<!-- ======================== TICKER ======================== -->
+<div class="ticker">
+  <div class="ticker-inner">
+    <span>PERSIAN MEELS</span><span class="dot">◆</span>
+    <span>INDIAN CLUBS</span><span class="dot">◆</span>
+    <span>CALISTHENICS</span><span class="dot">◆</span>
+    <span>MOVEMENT FREEDOM</span><span class="dot">◆</span>
+    <span>VERSATILE MOVEMENT</span><span class="dot">◆</span>
+    <span>BODYWEIGHT TRAINING</span><span class="dot">◆</span>
+    <span>EXPLORE YOUR BODY</span><span class="dot">◆</span>
+    <span>TRAIN EVERYWHERE</span><span class="dot">◆</span>
+    <span>PERSIAN MEELS</span><span class="dot">◆</span>
+    <span>INDIAN CLUBS</span><span class="dot">◆</span>
+    <span>CALISTHENICS</span><span class="dot">◆</span>
+    <span>MOVEMENT FREEDOM</span><span class="dot">◆</span>
+    <span>VERSATILE MOVEMENT</span><span class="dot">◆</span>
+    <span>BODYWEIGHT TRAINING</span><span class="dot">◆</span>
+    <span>EXPLORE YOUR BODY</span><span class="dot">◆</span>
+    <span>TRAIN EVERYWHERE</span><span class="dot">◆</span>
+  </div>
+</div>
+
+<!-- ======================== KTO DO NAS TRAFIA ======================== -->
+<section class="audience">
+  <div class="audience-header">
+    <div>
+      <span class="section-label reveal"><span class="section-num">03</span>Dla kogo / Grupa docelowa</span>
+      <h2 class="reveal">DLA<br><span class="outline">KOGO?</span></h2>
+    </div>
+    <p class="audience-sub reveal">Wiek: 18–60. Łączymy sportowców, zawodników sztuk walki, fizjoterapeutów, trenerów personalnych i wszystkich, którzy chcą wyjść poza schematy.</p>
+  </div>
+  <div class="audience-grid">
+    <div class="audience-card reveal">
+      <span class="aud-num">01</span>
+      <div class="aud-name">SPORTOWCY</div>
+      <div class="aud-desc">Szukasz wszechstronnego uzupełnienia swojego sportu? Persian Meels i Indian Clubs to narzędzia, które zmienią Twoją mobilność i siłę funkcjonalną.</div>
+    </div>
+    <div class="audience-card reveal reveal-delay-1">
+      <span class="aud-num">02</span>
+      <div class="aud-name">SZTUKI WALKI</div>
+      <div class="aud-desc">Zawodnicy MMA, boksu i zapasów od wieków sięgali po te narzędzia. Teraz możesz też.</div>
+    </div>
+    <div class="audience-card reveal reveal-delay-2">
+      <span class="aud-num">03</span>
+      <div class="aud-name">FIZJOTERAPEUCI</div>
+      <div class="aud-desc">Indian Clubs to jedno z najskuteczniejszych narzędzi do rehabilitacji i wzmacniania obręczy barkowej. Polecamy specjalistom.</div>
+    </div>
+    <div class="audience-card reveal">
+      <span class="aud-num">04</span>
+      <div class="aud-name">PASJONACI RUCHU</div>
+      <div class="aud-desc">Masz dość rutyny siłowni? Odkryj formy treningu, które angażują ciało i umysł jednocześnie.</div>
+    </div>
+    <div class="audience-card reveal reveal-delay-1">
+      <span class="aud-num">05</span>
+      <div class="aud-name">TRENERZY PERSONALNI</div>
+      <div class="aud-desc">Rozszerz ofertę o niszowe narzędzia. Wyróżnij się na rynku — daj klientom coś, czego jeszcze nie widzieli.</div>
+    </div>
+    <div class="audience-card reveal reveal-delay-2">
+      <span class="aud-num">06</span>
+      <div class="aud-name">OSOBY AKTYWNE</div>
+      <div class="aud-desc">Zdrowie, mobilność, balans. Trening dostępny dla każdego — bez siłowni, bez maszyn, bez ograniczeń.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================== GDZIE JESTEŚMY ======================== -->
+<section class="gdzie">
+  <div class="gdzie-text">
+    <span class="section-label reveal"><span class="section-num">04</span>Zasięg / Gdzie nas szukać</span>
+    <h2 class="reveal">ZNAJDŹ<br><span class="outline">NAS</span></h2>
+    <p class="body-text reveal reveal-delay-1" style="margin-top:24px;">Jesteśmy tam gdzie jesteś Ty. Online i offline — budujemy społeczność, która trenuje świadomie i dzieli się pasją do ruchu.</p>
+    <div style="margin-top: 32px;" class="reveal reveal-delay-2">
+      <a href="kontakt.html" class="btn-primary">Napisz do nas</a>
+    </div>
+  </div>
+  <div class="gdzie-stats reveal">
+    <div class="gdzie-stat">
+      <span class="gdzie-stat-num">IG</span>
+      <span class="gdzie-stat-label">@versatile.movement</span>
+    </div>
+    <div class="gdzie-stat">
+      <span class="gdzie-stat-num">YT</span>
+      <span class="gdzie-stat-label">VersatileMovement</span>
+    </div>
+    <div class="gdzie-stat">
+      <span class="gdzie-stat-num">FB</span>
+      <span class="gdzie-stat-label">VersatileMovement</span>
+    </div>
+    <div class="gdzie-stat">
+      <span class="gdzie-stat-num">SHOP</span>
+      <span class="gdzie-stat-label">palczany.pl</span>
+    </div>
+    <div class="gdzie-stat">
+      <span class="gdzie-stat-num">PL #1</span>
+      <span class="gdzie-stat-label">Niszowy sprzęt treningowy</span>
+    </div>
+  </div>
+</section>
+
+<!-- ======================== CTA ======================== -->
+<section class="cta-section">
+  <img src="Versatile_Movement_Circle_Logo.png" alt="" class="cta-logo reveal" aria-hidden="true">
+  <span class="cta-label reveal">Dołącz do ruchu</span>
+  <h2 class="cta-title reveal reveal-delay-1">BĄDŹ CZĘŚCIĄ<br><span class="outline-cream">RUCHU</span></h2>
+  <p class="cta-sub reveal reveal-delay-2">Śledź nas, trenuj z nami, odkrywaj z nami. Społeczność Versatile Movement czeka na Ciebie.</p>
+  <div class="cta-buttons reveal reveal-delay-3">
+    <a href="https://www.instagram.com/versatile.movement" target="_blank" class="btn-cream">@versatile.movement</a>
+    <a href="kontakt.html" class="btn-outline-cream">Napisz do nas</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-top">
+    <div>
+      <span class="footer-logo">VERSATILE<br>MOVEMENT</span>
+      <p class="footer-tagline">When we change the way we move,<br>we change the way we live.<br><br>Pierwsza w Polsce marka ruchu.</p>
+    </div>
+    <div class="footer-links">
+      <div class="footer-col">
+        <h4>Nawigacja</h4>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="o-nas.html">O nas</a></li>
+          <li><a href="spolecznosc.html">Społeczność</a></li>
+          <li><a href="zespol.html">Zespół</a></li>
+          <li><a href="blog.html">Blog</a></li>
+          <li><a href="kontakt.html">Kontakt</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Sklep</h4>
+        <ul>
+          <li><a href="index.html#sklep">Persian Meels</a></li>
+          <li><a href="index.html#sklep">Indian Clubs</a></li>
+          <li><a href="index.html#sklep">Akcesoria</a></li>
+          <li><a href="index.html#sklep">Odzież</a></li>
+          <li><a href="index.html#sklep">Programy treningowe</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Social media</h4>
+        <ul>
+          <li><a href="https://www.instagram.com/versatile.movement" target="_blank">Instagram</a></li>
+          <li><a href="https://www.facebook.com/VersatileMovement" target="_blank">Facebook</a></li>
+          <li><a href="https://www.youtube.com/@VersatileMovement" target="_blank">YouTube</a></li>
+          <li><a href="https://www.palczany.pl" target="_blank">Sklep palczany.pl</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span class="footer-copy">© 2025 Versatile Movement. Wszelkie prawa zastrzeżone.</span>
+    <span class="footer-motto">MOVE. EXPLORE. LIVE.</span>
+  </div>
+</footer>
+
+<script>
+  const cursor = document.getElementById('cursor');
+  const ring = document.getElementById('cursorRing');
+  let mx=0,my=0,rx=0,ry=0;
+  document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cursor.style.left=mx+'px';cursor.style.top=my+'px';});
+  (function anim(){rx+=(mx-rx)*0.12;ry+=(my-ry)*0.12;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(anim);})();
+  document.querySelectorAll('a,button,.val-big-card,.audience-card,.gdzie-stat').forEach(el=>{
+    el.addEventListener('mouseenter',()=>{cursor.style.transform='translate(-50%,-50%) scale(2.5)';ring.style.transform='translate(-50%,-50%) scale(1.4)';ring.style.opacity='0.2';});
+    el.addEventListener('mouseleave',()=>{cursor.style.transform='translate(-50%,-50%) scale(1)';ring.style.transform='translate(-50%,-50%) scale(1)';ring.style.opacity='0.5';});
+  });
+  window.addEventListener('scroll',()=>document.getElementById('navbar').classList.toggle('scrolled',window.scrollY>60));
+  document.getElementById('hamburger').addEventListener('click',()=>document.getElementById('mobileMenu').classList.add('open'));
+  document.getElementById('mobileClose').addEventListener('click',closeMobile);
+  function closeMobile(){document.getElementById('mobileMenu').classList.remove('open');}
+  const obs=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target);}}),{threshold:0.1,rootMargin:'0px 0px -40px 0px'});
+  document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+</script>
+</body>
+</html>

@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blog — Versatile Movement</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;600;700;900&family=Bebas+Neue&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  :root { --cream: #EDEAE0; --black: #0A0A0A; --white: #FAFAF7; --font-display: 'Bebas Neue', sans-serif; --font-mono: 'Space Mono', 'Courier New', monospace; --font-body: 'Nunito Sans', sans-serif; }
+  html { scroll-behavior: smooth; overflow-x: hidden; }
+  body { background: var(--cream); color: var(--black); font-family: var(--font-body); cursor: none; overflow-x: hidden; }
+  .cursor { position: fixed; width: 10px; height: 10px; background: var(--black); border-radius: 50%; pointer-events: none; z-index: 9999; transform: translate(-50%,-50%); transition: transform 0.1s ease; }
+  .cursor-ring { position: fixed; width: 36px; height: 36px; border: 1.5px solid var(--black); border-radius: 50%; pointer-events: none; z-index: 9998; transform: translate(-50%,-50%); transition: all 0.18s ease; opacity: 0.5; }
+  ::-webkit-scrollbar { width: 3px; }
+  ::-webkit-scrollbar-track { background: var(--cream); }
+  ::-webkit-scrollbar-thumb { background: var(--black); }
+  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 24px 48px; transition: background 0.4s ease, padding 0.4s ease; }
+  nav.scrolled { background: rgba(237,234,224,0.92); backdrop-filter: blur(12px); padding: 16px 48px; border-bottom: 1px solid rgba(10,10,10,0.08); }
+  .nav-logo { font-family: var(--font-display); font-size: 22px; letter-spacing: 4px; color: var(--black); text-decoration: none; display: flex; flex-direction: row; align-items: center; gap: 10px; line-height: 1; }
+  .nav-logo-img { height: 32px; width: auto; opacity: 0.85; }
+  .nav-logo-text { display: flex; flex-direction: column; }
+  .nav-logo-text span { font-size: 10px; letter-spacing: 6px; font-family: var(--font-mono); font-weight: 400; opacity: 0.5; margin-top: 2px; }
+  .nav-links { display: flex; gap: 36px; list-style: none; }
+  .nav-links a { font-family: var(--font-mono); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--black); text-decoration: none; opacity: 0.6; transition: opacity 0.2s; position: relative; }
+  .nav-links a::after { content: ''; position: absolute; bottom: -3px; left: 0; right: 0; height: 1px; background: var(--black); transform: scaleX(0); transform-origin: left; transition: transform 0.3s ease; }
+  .nav-links a:hover, .nav-links a.active { opacity: 1; }
+  .nav-links a:hover::after, .nav-links a.active::after { transform: scaleX(1); }
+  .nav-links .nav-shop a { opacity: 1; background: var(--black); color: var(--cream); padding: 8px 18px; letter-spacing: 2px; transition: background 0.2s, color 0.2s; }
+  .nav-links .nav-shop a:hover { background: transparent; color: var(--black); border: 1px solid var(--black); }
+  .nav-links .nav-shop a::after { display: none; }
+  .hamburger { display: none; flex-direction: column; gap: 5px; cursor: none; background: none; border: none; padding: 4px; }
+  .hamburger span { display: block; width: 28px; height: 1.5px; background: var(--black); transition: all 0.3s; }
+  .mobile-menu { display: none; position: fixed; inset: 0; background: var(--black); z-index: 99; flex-direction: column; justify-content: center; align-items: center; gap: 32px; }
+  .mobile-menu.open { display: flex; }
+  .mobile-menu a { font-family: var(--font-display); font-size: clamp(36px,8vw,72px); color: var(--cream); text-decoration: none; letter-spacing: 4px; transition: opacity 0.2s; opacity: 0.8; }
+  .mobile-menu a:hover { opacity: 1; }
+  .mobile-close { position: absolute; top: 28px; right: 48px; font-family: var(--font-mono); font-size: 11px; color: var(--cream); cursor: none; background: none; border: none; letter-spacing: 2px; opacity: 0.6; }
+  .reveal { opacity: 0; transform: translateY(40px); transition: opacity 0.9s ease, transform 0.9s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  .reveal-delay-1 { transition-delay: 0.15s; }
+  .reveal-delay-2 { transition-delay: 0.3s; }
+  .reveal-delay-3 { transition-delay: 0.45s; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes spinSlow { to { transform: translateY(-50%) rotate(360deg); } }
+  .section-label { font-family: var(--font-mono); font-size: 9px; letter-spacing: 4px; text-transform: uppercase; opacity: 0.35; margin-bottom: 16px; display: block; }
+  .section-num { opacity: 0.2; margin-right: 10px; }
+  h2 { font-family: var(--font-display); font-size: clamp(44px,6vw,86px); line-height: 0.95; letter-spacing: 1px; }
+  .outline { color: transparent; -webkit-text-stroke: 1.5px var(--black); }
+  .outline-cream { color: transparent; -webkit-text-stroke: 1.5px var(--cream); }
+
+  /* HERO */
+  .page-hero { background: var(--black); min-height: 55vh; display: flex; flex-direction: column; justify-content: flex-end; padding: 0 48px 72px; position: relative; overflow: hidden; }
+  .hero-logo-bg { position: absolute; width: clamp(300px,50vw,560px); height: clamp(300px,50vw,560px); top: 50%; right: -80px; transform: translateY(-50%); opacity: 0.04; pointer-events: none; filter: invert(1); object-fit: contain; animation: spinSlow 80s linear infinite; }
+  .page-hero-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 5px; text-transform: uppercase; color: var(--cream); opacity: 0.35; margin-bottom: 20px; display: block; animation: fadeUp 0.8s 0.2s both; }
+  .page-hero-title { font-family: var(--font-display); font-size: clamp(80px,14vw,180px); line-height: 0.9; letter-spacing: 2px; color: var(--cream); animation: fadeUp 0.8s 0.3s both; }
+  .page-hero-sub { font-family: var(--font-mono); font-size: clamp(10px,1.2vw,13px); letter-spacing: 2px; line-height: 1.9; color: var(--cream); opacity: 0.45; text-transform: uppercase; max-width: 480px; margin-top: 20px; animation: fadeUp 0.8s 0.5s both; }
+
+  /* FILTER BAR */
+  .filter-bar { padding: 32px 48px; background: var(--white); border-bottom: 1px solid rgba(10,10,10,0.08); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .filter-label { font-family: var(--font-mono); font-size: 9px; letter-spacing: 3px; text-transform: uppercase; opacity: 0.3; margin-right: 8px; }
+  .filter-btn { font-family: var(--font-mono); font-size: 9px; letter-spacing: 2px; text-transform: uppercase; padding: 7px 16px; border: 1px solid rgba(10,10,10,0.12); background: transparent; cursor: none; transition: all 0.2s; color: var(--black); opacity: 0.6; }
+  .filter-btn:hover, .filter-btn.active { background: var(--black); color: var(--cream); border-color: var(--black); opacity: 1; }
+
+  /* FEATURED POST */
+  .featured-post { padding: 80px 48px 0; }
+  .featured-post-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; background: var(--black); }
+  .featured-post-img { background: rgba(255,255,255,0.05); min-height: 480px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+  .featured-post-img img { width: 100%; height: 100%; object-fit: cover; opacity: 0.6; }
+  .featured-post-img-placeholder { font-family: var(--font-display); font-size: 120px; color: rgba(237,234,224,0.05); letter-spacing: 4px; }
+  .featured-post-content { padding: 52px 48px; display: flex; flex-direction: column; justify-content: flex-end; gap: 16px; }
+  .featured-badge { display: inline-block; font-family: var(--font-mono); font-size: 8px; letter-spacing: 3px; text-transform: uppercase; padding: 5px 12px; border: 1px solid rgba(237,234,224,0.2); color: var(--cream); margin-bottom: 8px; align-self: flex-start; }
+  .featured-cat { font-family: var(--font-mono); font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: var(--cream); opacity: 0.4; }
+  .featured-title { font-family: var(--font-display); font-size: clamp(32px,4.5vw,60px); letter-spacing: 1px; line-height: 1.0; color: var(--cream); }
+  .featured-excerpt { font-size: 14px; line-height: 1.8; color: var(--cream); opacity: 0.55; max-width: 440px; }
+  .featured-meta { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+  .featured-meta-date { font-family: var(--font-mono); font-size: 9px; color: var(--cream); opacity: 0.3; letter-spacing: 1px; }
+  .btn-cream-sm { display: inline-flex; align-items: center; gap: 8px; padding: 10px 24px; background: var(--cream); color: var(--black); font-family: var(--font-mono); font-size: 9px; letter-spacing: 2px; text-transform: uppercase; text-decoration: none; border: 1.5px solid var(--cream); transition: all 0.25s; }
+  .btn-cream-sm:hover { background: transparent; color: var(--cream); }
+  .btn-cream-sm::after { content: '→'; }
+
+  /* POSTS GRID */
+  .posts-section { padding: 80px 48px 120px; }
+  .posts-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 2px; }
+  .post-card { background: rgba(10,10,10,0.03); display: flex; flex-direction: column; cursor: none; transition: background 0.3s; text-decoration: none; color: var(--black); }
+  .post-card:hover { background: rgba(10,10,10,0.08); }
+  .post-card-img { width: 100%; aspect-ratio: 16/10; background: var(--black); overflow: hidden; position: relative; }
+  .post-card-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; opacity: 0.7; }
+  .post-card:hover .post-card-img img { transform: scale(1.04); }
+  .post-card-img-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 48px; color: rgba(237,234,224,0.06); letter-spacing: 4px; }
+  .post-card-body { padding: 28px 28px 32px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+  .post-cat { font-family: var(--font-mono); font-size: 8px; letter-spacing: 3px; text-transform: uppercase; opacity: 0.35; }
+  .post-title { font-family: var(--font-display); font-size: clamp(20px,2.2vw,28px); letter-spacing: 1px; line-height: 1.1; }
+  .post-excerpt { font-size: 12px; line-height: 1.75; opacity: 0.55; flex: 1; }
+  .post-footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 16px; border-top: 1px solid rgba(10,10,10,0.06); }
+  .post-date { font-family: var(--font-mono); font-size: 8px; opacity: 0.3; letter-spacing: 1px; }
+  .post-read { font-family: var(--font-mono); font-size: 8px; letter-spacing: 2px; text-transform: uppercase; opacity: 0.4; transition: opacity 0.2s; display: flex; align-items: center; gap: 6px; }
+  .post-read::after { content: '→'; }
+  .post-card:hover .post-read { opacity: 1; }
+
+  /* NEWSLETTER */
+  .newsletter { background: var(--black); padding: 100px 48px; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+  .newsletter-text .section-label { color: var(--cream); opacity: 0.3; }
+  .newsletter-text h2 { color: var(--cream); margin-bottom: 16px; }
+  .newsletter-text p { font-size: 15px; line-height: 1.8; color: var(--cream); opacity: 0.55; }
+  .newsletter-form { display: flex; flex-direction: column; gap: 16px; }
+  .newsletter-input { background: transparent; border: none; border-bottom: 1.5px solid rgba(237,234,224,0.2); padding: 14px 0; font-family: var(--font-body); font-size: 14px; color: var(--cream); outline: none; transition: border-color 0.3s; width: 100%; }
+  .newsletter-input::placeholder { color: rgba(237,234,224,0.3); }
+  .newsletter-input:focus { border-color: var(--cream); }
+  .newsletter-submit { padding: 14px 40px; background: var(--cream); color: var(--black); border: 1.5px solid var(--cream); font-family: var(--font-mono); font-size: 10px; letter-spacing: 3px; text-transform: uppercase; cursor: none; transition: all 0.25s; align-self: flex-start; }
+  .newsletter-submit:hover { background: transparent; color: var(--cream); }
+  .newsletter-note { font-family: var(--font-mono); font-size: 8px; letter-spacing: 1px; color: var(--cream); opacity: 0.2; }
+
+  /* FOOTER */
+  footer { background: var(--black); color: var(--cream); padding: 64px 48px 32px; }
+  .footer-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 64px; gap: 48px; }
+  .footer-logo { font-family: var(--font-display); font-size: 28px; letter-spacing: 6px; margin-bottom: 8px; display: block; }
+  .footer-tagline { font-family: var(--font-mono); font-size: 9px; letter-spacing: 2px; opacity: 0.3; max-width: 280px; line-height: 1.8; text-transform: uppercase; }
+  .footer-links { display: flex; gap: 64px; flex-wrap: wrap; }
+  .footer-col h4 { font-family: var(--font-mono); font-size: 9px; letter-spacing: 3px; text-transform: uppercase; opacity: 0.3; margin-bottom: 20px; }
+  .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .footer-col a { color: var(--cream); text-decoration: none; font-family: var(--font-mono); font-size: 11px; letter-spacing: 1px; opacity: 0.55; transition: opacity 0.2s; }
+  .footer-col a:hover { opacity: 1; }
+  .footer-bottom { border-top: 1px solid rgba(237,234,224,0.08); padding-top: 24px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+  .footer-copy { font-family: var(--font-mono); font-size: 9px; opacity: 0.25; letter-spacing: 1px; }
+  .footer-motto { font-family: var(--font-display); font-size: 13px; letter-spacing: 4px; opacity: 0.3; }
+
+  @media (max-width: 1024px) { .featured-post-inner, .newsletter { grid-template-columns: 1fr; } .posts-grid { grid-template-columns: repeat(2,1fr); } }
+  @media (max-width: 768px) {
+    nav { padding: 20px 24px; } nav.scrolled { padding: 14px 24px; } .nav-links { display: none; } .hamburger { display: flex; }
+    .page-hero, .filter-bar, .featured-post, .posts-section, .newsletter { padding-left: 24px; padding-right: 24px; }
+    .posts-grid { grid-template-columns: 1fr; }
+    .mobile-close { right: 24px; } footer { padding: 48px 24px 28px; } .footer-top { flex-direction: column; } .footer-links { gap: 40px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<nav id="navbar">
+  <a href="index.html" class="nav-logo">
+    <img src="Versatile_Movement_Circle_Logo.png" alt="VM" class="nav-logo-img">
+    <div class="nav-logo-text">VERSATILE <span>MOVEMENT</span></div>
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="o-nas.html">O nas</a></li>
+    <li><a href="spolecznosc.html">Społeczność</a></li>
+    <li><a href="zespol.html">Zespół</a></li>
+    <li><a href="blog.html" class="active">Blog</a></li>
+    <li><a href="kontakt.html">Kontakt</a></li>
+    <li class="nav-shop"><a href="index.html#sklep">Sklep</a></li>
+  </ul>
+  <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+</nav>
+
+<div class="mobile-menu" id="mobileMenu">
+  <button class="mobile-close" id="mobileClose">ZAMKNIJ</button>
+  <a href="index.html" onclick="closeMobile()">HOME</a>
+  <a href="o-nas.html" onclick="closeMobile()">O NAS</a>
+  <a href="spolecznosc.html" onclick="closeMobile()">SPOŁECZNOŚĆ</a>
+  <a href="zespol.html" onclick="closeMobile()">ZESPÓŁ</a>
+  <a href="blog.html" onclick="closeMobile()">BLOG</a>
+  <a href="kontakt.html" onclick="closeMobile()">KONTAKT</a>
+  <a href="index.html#sklep" onclick="closeMobile()">SKLEP</a>
+</div>
+
+<!-- HERO -->
+<section class="page-hero">
+  <img src="Versatile_Movement_Circle_Logo.png" alt="" class="hero-logo-bg" aria-hidden="true">
+  <span class="page-hero-label">05 — Wiedza / Inspiracje</span>
+  <h1 class="page-hero-title">BL<span class="outline-cream">OG</span></h1>
+  <p class="page-hero-sub">Filozofia ruchu, porady treningowe, historia narzędzi i inspiracje. Wszystko czego potrzebujesz, żeby trenować mądrzej.</p>
+</section>
+
+<!-- FILTER -->
+<div class="filter-bar">
+  <span class="filter-label">Kategorie:</span>
+  <button class="filter-btn active" onclick="filterPosts('all',this)">Wszystkie</button>
+  <button class="filter-btn" onclick="filterPosts('filozofia',this)">Filozofia ruchu</button>
+  <button class="filter-btn" onclick="filterPosts('trening',this)">Trening</button>
+  <button class="filter-btn" onclick="filterPosts('sprzet',this)">Sprzęt</button>
+  <button class="filter-btn" onclick="filterPosts('historia',this)">Historia</button>
+</div>
+
+<!-- FEATURED POST -->
+<div class="featured-post reveal">
+  <div class="featured-post-inner">
+    <div class="featured-post-img">
+      <div class="featured-post-img-placeholder">VM</div>
+    </div>
+    <div class="featured-post-content">
+      <span class="featured-badge">Wyróżniony</span>
+      <span class="featured-cat" data-cat="sprzet">Sprzęt</span>
+      <h2 class="featured-title">Persian Meels — starożytna mądrość w nowoczesnym treningu</h2>
+      <p class="featured-excerpt">Skąd pochodzą Persian Meels? Jak to narzędzie, używane przez irańskich zapaśników od setek lat, może odmienić Twój trening ramion i mobilność barków? Zanurzamy się w historię i praktykę.</p>
+      <div class="featured-meta">
+        <span class="featured-meta-date">15 marca 2025</span>
+        <a href="#" class="btn-cream-sm">Czytaj artykuł</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- POSTS GRID -->
+<section class="posts-section">
+  <div class="posts-grid" id="postsGrid">
+
+    <a href="#" class="post-card reveal" data-cat="trening">
+      <div class="post-card-img"><div class="post-card-img-placeholder">IC</div></div>
+      <div class="post-card-body">
+        <span class="post-cat">Trening</span>
+        <h3 class="post-title">Indian Clubs dla barków — od rehabilitacji do siły</h3>
+        <p class="post-excerpt">Dlaczego fizjoterapeuci coraz częściej sięgają po Indian Clubs? Poznaj protokół ćwiczeń, który odbuduje Twoje barki i zwiększy zakres ruchu w stawach ramiennych.</p>
+        <div class="post-footer">
+          <span class="post-date">2 marca 2025</span>
+          <span class="post-read">Czytaj</span>
+        </div>
+      </div>
+    </a>
+
+    <a href="#" class="post-card reveal reveal-delay-1" data-cat="filozofia">
+      <div class="post-card-img"><div class="post-card-img-placeholder">RM</div></div>
+      <div class="post-card-body">
+        <span class="post-cat">Filozofia ruchu</span>
+        <h3 class="post-title">Ruch jako podróż w głąb siebie</h3>
+        <p class="post-excerpt">Co łączy kalistenikę, tańce bojowe i medytację w ruchu? Świadoma praktyka fizyczna jako droga do lepszego poznania własnego ciała i umysłu.</p>
+        <div class="post-footer">
+          <span class="post-date">18 lutego 2025</span>
+          <span class="post-read">Czytaj</span>
+        </div>
+      </div>
+    </a>
+
+    <a href="#" class="post-card reveal reveal-delay-2" data-cat="historia">
+      <div class="post-card-img"><div class="post-card-img-placeholder">HM</div></div>
+      <div class="post-card-body">
+        <span class="post-cat">Historia</span>
+        <h3 class="post-title">Gada — broń wojowników jako narzędzie treningu</h3>
+        <p class="post-excerpt">Gada to tradycyjna indyjska maczuga, która przez wieki była podstawą treningu zapaśników. Dziś wraca do łask jako niezwykłe narzędzie siłowe.</p>
+        <div class="post-footer">
+          <span class="post-date">5 lutego 2025</span>
+          <span class="post-read">Czytaj</span>
+        </div>
+      </div>
+    </a>
+
+    <a href="#" class="post-card reveal" data-cat="trening">
+      <div class="post-card-img"><div class="post-card-img-placeholder">HS</div></div>
+      <div class="post-card-body">
+        <span class="post-cat">Trening</span>
+        <h3 class="post-title">Handstand od zera — jak zacząć i na co uważać</h3>
+        <p class="post-excerpt">Stanie na rękach to cel wielu, ale niewielu wie jak do niego podejść metodycznie. Oto kompletny przewodnik dla początkujących.</p>
+        <div class="post-footer">
+          <span class="post-date">22 stycznia 2025</span>
+          <span class="post-read">Czytaj</span>
+        </div>
+      </div>
+    </a>
+
+    <a href="#" class="post-card reveal reveal-delay-1" data-cat="filozofia">
+      <div class="post-card-img"><div class="post-card-img-placeholder">WR</div></div>
+      <div class="post-card-body">
+        <span class="post-cat">Filozofia ruchu</span>
+        <h3 class="post-title">Dlaczego wszechstronność jest ważniejsza niż specjalizacja</h3>
+        <p class="post-excerpt">W świecie fitness każdy jest ekspertem od jednej rzeczy. My twierdzimy, że prawdziwa sprawność to umiejętność poruszania się w każdych warunkach.</p>
+        <div class="post-footer">
+          <span class="post-date">10 stycznia 2025</span>
+          <span class="post-read">Czytaj</span>
+        </div>
+      </div>
+    </a>
+
+    <a href="#" class="post-card reveal reveal-delay-2" data-cat="sprzet">
+      <div class="post-card-img"><div class="post-card-img-placeholder">MF</div></div>
+      <div class="post-card-body">
+        <span class="post-cat">Sprzęt</span>
+        <h3 class="post-title">Jak wybrać pierwsze Persian Meels — przewodnik dla początkujących</h3>
+        <p class="post-excerpt">Różne wagi, różne kształty, różne materiały. Który rozmiar wybrać na start? Odpowiadamy na najczęstsze pytania nowych adeptów.</p>
+        <div class="post-footer">
+          <span class="post-date">3 stycznia 2025</span>
+          <span class="post-read">Czytaj</span>
+        </div>
+      </div>
+    </a>
+
+  </div>
+</section>
+
+<!-- NEWSLETTER -->
+<section class="newsletter">
+  <div class="newsletter-text">
+    <span class="section-label reveal"><span class="section-num">—</span>Newsletter</span>
+    <h2 class="reveal">BĄDŹ<br><span class="outline-cream">NA BIEŻĄCO</span></h2>
+    <p class="reveal reveal-delay-1" style="margin-top:20px;">Nowe artykuły, porady treningowe i informacje o produktach — prosto na Twoją skrzynkę. Bez spamu, tylko wartościowe treści.</p>
+  </div>
+  <form class="newsletter-form reveal" onsubmit="handleNewsletter(event)">
+    <div>
+      <div style="font-family:var(--font-mono);font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--cream);opacity:0.3;margin-bottom:8px;">Twój e-mail</div>
+      <input class="newsletter-input" type="email" placeholder="jan@email.com" required>
+    </div>
+    <div>
+      <div style="font-family:var(--font-mono);font-size:9px;letter-spacing:3px;text-transform:uppercase;color:var(--cream);opacity:0.3;margin-bottom:8px;">Imię (opcjonalnie)</div>
+      <input class="newsletter-input" type="text" placeholder="Jan">
+    </div>
+    <button type="submit" class="newsletter-submit">Zapisz się</button>
+    <p class="newsletter-note">Możesz wypisać się w dowolnym momencie. Szanujemy Twoją prywatność.</p>
+  </form>
+</section>
+
+<footer>
+  <div class="footer-top">
+    <div>
+      <span class="footer-logo">VERSATILE<br>MOVEMENT</span>
+      <p class="footer-tagline">When we change the way we move,<br>we change the way we live.<br><br>Pierwsza w Polsce marka ruchu.</p>
+    </div>
+    <div class="footer-links">
+      <div class="footer-col">
+        <h4>Nawigacja</h4>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="o-nas.html">O nas</a></li>
+          <li><a href="spolecznosc.html">Społeczność</a></li>
+          <li><a href="zespol.html">Zespół</a></li>
+          <li><a href="blog.html">Blog</a></li>
+          <li><a href="kontakt.html">Kontakt</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Blog</h4>
+        <ul>
+          <li><a href="#">Filozofia ruchu</a></li>
+          <li><a href="#">Trening</a></li>
+          <li><a href="#">Sprzęt</a></li>
+          <li><a href="#">Historia</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Social media</h4>
+        <ul>
+          <li><a href="https://www.instagram.com/versatile.movement" target="_blank">Instagram</a></li>
+          <li><a href="https://www.facebook.com/VersatileMovement" target="_blank">Facebook</a></li>
+          <li><a href="https://www.youtube.com/@VersatileMovement" target="_blank">YouTube</a></li>
+          <li><a href="https://www.palczany.pl" target="_blank">Sklep palczany.pl</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span class="footer-copy">© 2025 Versatile Movement. Wszelkie prawa zastrzeżone.</span>
+    <span class="footer-motto">MOVE. EXPLORE. LIVE.</span>
+  </div>
+</footer>
+
+<script>
+  const cursor=document.getElementById('cursor'),ring=document.getElementById('cursorRing');
+  let mx=0,my=0,rx=0,ry=0;
+  document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cursor.style.left=mx+'px';cursor.style.top=my+'px';});
+  (function anim(){rx+=(mx-rx)*0.12;ry+=(my-ry)*0.12;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(anim);})();
+  document.querySelectorAll('a,button,.post-card,.filter-btn').forEach(el=>{
+    el.addEventListener('mouseenter',()=>{cursor.style.transform='translate(-50%,-50%) scale(2.5)';ring.style.transform='translate(-50%,-50%) scale(1.4)';ring.style.opacity='0.2';});
+    el.addEventListener('mouseleave',()=>{cursor.style.transform='translate(-50%,-50%) scale(1)';ring.style.transform='translate(-50%,-50%) scale(1)';ring.style.opacity='0.5';});
+  });
+  window.addEventListener('scroll',()=>document.getElementById('navbar').classList.toggle('scrolled',window.scrollY>60));
+  document.getElementById('hamburger').addEventListener('click',()=>document.getElementById('mobileMenu').classList.add('open'));
+  document.getElementById('mobileClose').addEventListener('click',closeMobile);
+  function closeMobile(){document.getElementById('mobileMenu').classList.remove('open');}
+  const obs=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target);}}),{threshold:0.1,rootMargin:'0px 0px -40px 0px'});
+  document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+  function filterPosts(cat, btn) {
+    document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.post-card').forEach(card=>{
+      if(cat==='all' || card.dataset.cat===cat) { card.style.display='flex'; } else { card.style.display='none'; }
+    });
+  }
+  function handleNewsletter(e) {
+    e.preventDefault();
+    const btn=e.target.querySelector('.newsletter-submit');
+    btn.textContent='Zapisano ✓';
+    btn.disabled=true;
+    setTimeout(()=>{btn.textContent='Zapisz się';btn.disabled=false;e.target.reset();},3000);
+  }
+</script>
+</body>
+</html>

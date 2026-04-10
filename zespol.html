@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zespół — Versatile Movement</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;600;700;900&family=Bebas+Neue&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --cream: #EDEAE0;
+    --black: #0A0A0A;
+    --white: #FAFAF7;
+    --mid: #888880;
+    --font-display: 'Bebas Neue', sans-serif;
+    --font-mono: 'Space Mono', 'Courier New', monospace;
+    --font-body: 'Nunito Sans', sans-serif;
+  }
+
+  html { scroll-behavior: smooth; overflow-x: hidden; }
+  body { background: var(--cream); color: var(--black); font-family: var(--font-body); cursor: none; overflow-x: hidden; }
+
+  /* CURSOR */
+  .cursor { position: fixed; width: 10px; height: 10px; background: #FAFAF7; border-radius: 50%; pointer-events: none; z-index: 9999; transform: translate(-50%,-50%); transition: transform 0.1s ease; mix-blend-mode: difference; }
+  .cursor-ring { position: fixed; width: 36px; height: 36px; border: 1.5px solid #FAFAF7; border-radius: 50%; pointer-events: none; z-index: 9998; transform: translate(-50%,-50%); transition: all 0.18s ease; opacity: 0.5; mix-blend-mode: difference; }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 3px; }
+  ::-webkit-scrollbar-track { background: var(--cream); }
+  ::-webkit-scrollbar-thumb { background: var(--black); }
+
+  /* NAV */
+  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 24px 48px; transition: background 0.4s ease, padding 0.4s ease; }
+  nav.scrolled { background: rgba(10,10,10,0.88); backdrop-filter: blur(12px); padding: 16px 48px; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  .nav-logo { text-decoration: none; display: flex; align-items: center; line-height: 1; }
+  .nav-logo-img { height: 52px; width: auto; display: block; transition: opacity 0.2s; }
+  .nav-logo-img:hover { opacity: 0.75; }
+  .nav-links { display: flex; gap: 36px; list-style: none; }
+  .nav-links a { font-family: var(--font-mono); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--cream); text-decoration: none; opacity: 0.6; transition: opacity 0.2s; position: relative; }
+  .nav-links a::after { content: ''; position: absolute; bottom: -3px; left: 0; right: 0; height: 1px; background: var(--cream); transform: scaleX(0); transform-origin: left; transition: transform 0.3s ease; }
+  .nav-links a:hover, .nav-links a.active { opacity: 1; }
+  .nav-links a:hover::after, .nav-links a.active::after { transform: scaleX(1); }
+  .nav-links .nav-shop a { opacity: 1; background: var(--cream); color: var(--black); padding: 8px 18px; letter-spacing: 2px; transition: background 0.2s, color 0.2s; }
+  .nav-links .nav-shop a:hover { background: transparent; color: var(--cream); border: 1px solid var(--cream); }
+  .nav-links .nav-shop a::after { display: none; }
+  .hamburger { display: none; flex-direction: column; gap: 5px; cursor: none; background: none; border: none; padding: 4px; }
+  .hamburger span { display: block; width: 28px; height: 1.5px; background: var(--cream); transition: all 0.3s; }
+  .mobile-menu { display: none; position: fixed; inset: 0; background: var(--black); z-index: 99; flex-direction: column; justify-content: center; align-items: center; gap: 32px; }
+  .mobile-menu.open { display: flex; }
+  .mobile-menu a { font-family: var(--font-display); font-size: clamp(36px,8vw,72px); color: var(--cream); text-decoration: none; letter-spacing: 4px; transition: opacity 0.2s; opacity: 0.8; }
+  .mobile-menu a:hover { opacity: 1; }
+  .mobile-close { position: absolute; top: 28px; right: 48px; font-family: var(--font-mono); font-size: 11px; color: var(--cream); cursor: none; background: none; border: none; letter-spacing: 2px; opacity: 0.6; }
+
+  /* REVEAL */
+  .reveal { opacity: 0; transform: translateY(32px); transition: opacity 0.9s ease, transform 0.9s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+  .reveal-delay-1 { transition-delay: 0.15s; }
+  .reveal-delay-2 { transition-delay: 0.3s; }
+  .reveal-delay-3 { transition-delay: 0.45s; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ===== HERO ===== */
+  .hero {
+    position: relative;
+    height: 100vh;
+    min-height: 560px;
+    overflow: hidden;
+    display: flex;
+    align-items: flex-end;
+    background: var(--black);
+  }
+  @keyframes heroBreath {
+    0%   { transform: scale(1.0) translateY(0px); }
+    50%  { transform: scale(1.05) translateY(-6px); }
+    100% { transform: scale(1.0) translateY(0px); }
+  }
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    background-image: url('Workout 1.jpg');
+    background-size: cover;
+    background-position: center 48%;
+    filter: contrast(1.05) saturate(0.7);
+    opacity: 0.45;
+    animation: heroBreath 14s ease-in-out infinite;
+    will-change: transform;
+  }
+  .hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(10,10,10,0.2) 0%,
+      rgba(10,10,10,0.1) 40%,
+      rgba(10,10,10,0.75) 80%,
+      rgba(10,10,10,0.97) 100%
+    );
+  }
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    padding: 0 48px 80px;
+    width: 100%;
+  }
+  .hero-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--cream);
+    opacity: 0.45;
+    margin-bottom: 20px;
+    animation: fadeUp 1s 0.3s both;
+  }
+  .hero-title {
+    font-family: var(--font-display);
+    font-size: clamp(80px, 15vw, 220px);
+    line-height: 0.88;
+    letter-spacing: -1px;
+    color: var(--cream);
+    animation: fadeUp 1s 0.4s both;
+  }
+  .hero-title .outline-letter {
+    color: transparent;
+    -webkit-text-stroke: 2px var(--cream);
+  }
+  .hero-sub-row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-top: 32px;
+    animation: fadeUp 1s 0.6s both;
+    flex-wrap: wrap;
+    gap: 24px;
+  }
+  .hero-tagline {
+    font-family: var(--font-mono);
+    font-size: clamp(9px, 1vw, 11px);
+    letter-spacing: 2px;
+    line-height: 2;
+    text-transform: uppercase;
+    color: var(--cream);
+    opacity: 0.45;
+    max-width: 340px;
+  }
+  .hero-scroll-hint {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--cream);
+    opacity: 0.3;
+    text-transform: uppercase;
+  }
+  .hero-scroll-line { width: 48px; height: 1px; background: var(--cream); opacity: 0.3; }
+
+  /* ===== TICKER ===== */
+  .ticker { border-top: 1px solid rgba(10,10,10,0.12); border-bottom: 1px solid rgba(10,10,10,0.12); overflow: hidden; padding: 12px 0; background: var(--black); }
+  .ticker-inner { display: flex; gap: 80px; animation: ticker 28s linear infinite; white-space: nowrap; width: max-content; }
+  .ticker-inner span { font-family: var(--font-display); font-size: 14px; letter-spacing: 6px; color: var(--cream); opacity: 0.7; }
+  .ticker-inner .dot { opacity: 0.2; }
+  @keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+  /* ===== INTRO ===== */
+  .intro {
+    padding: 120px 48px 80px;
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 80px;
+    align-items: start;
+    border-bottom: 1px solid rgba(10,10,10,0.08);
+  }
+  .intro-label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    opacity: 0.35;
+    padding-top: 8px;
+    display: block;
+  }
+  .intro-title {
+    font-family: var(--font-display);
+    font-size: clamp(52px, 7vw, 96px);
+    line-height: 0.9;
+    letter-spacing: 1px;
+    margin-bottom: 32px;
+  }
+  .intro-title .outline { color: transparent; -webkit-text-stroke: 1.5px var(--black); }
+  .intro-text {
+    font-size: clamp(15px, 1.5vw, 17px);
+    line-height: 1.85;
+    opacity: 0.6;
+    max-width: 540px;
+  }
+
+  /* ===== TEAM GRID ===== */
+  .team-section {
+    padding: 80px 48px 120px;
+  }
+  .team-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+  }
+
+  /* MEMBER CARD */
+  .member {
+    position: relative;
+    cursor: none;
+    overflow: hidden;
+    background: var(--black);
+  }
+  .member-photo-wrap {
+    position: relative;
+    overflow: hidden;
+    aspect-ratio: 3/4;
+  }
+  .member-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    filter: contrast(1.06) saturate(0.78);
+    transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    display: block;
+  }
+  .member:hover .member-photo { transform: scale(1.05); }
+  .member-photo-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      transparent 45%,
+      rgba(10,10,10,0.5) 70%,
+      rgba(10,10,10,0.92) 100%
+    );
+    pointer-events: none;
+  }
+  .member-photo-tint {
+    position: absolute;
+    inset: 0;
+    background: rgba(10,10,10,0.12);
+    mix-blend-mode: multiply;
+    transition: opacity 0.4s;
+    pointer-events: none;
+  }
+  .member:hover .member-photo-tint { opacity: 0; }
+  .member-num {
+    position: absolute;
+    top: 24px;
+    left: 24px;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--cream);
+    opacity: 0.35;
+    z-index: 2;
+  }
+
+  /* info below photo */
+  .member-info {
+    background: var(--black);
+    padding: 32px 32px 40px;
+    position: relative;
+  }
+  .member-info::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 32px; right: 32px;
+    height: 1px;
+    background: rgba(237,234,224,0.08);
+  }
+  .member-role {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--cream);
+    opacity: 0.35;
+    margin-bottom: 10px;
+    display: block;
+  }
+  .member-name {
+    font-family: var(--font-display);
+    font-size: clamp(36px, 3.5vw, 52px);
+    letter-spacing: 1px;
+    color: var(--cream);
+    line-height: 0.92;
+    margin-bottom: 20px;
+  }
+  .member-name .outline { color: transparent; -webkit-text-stroke: 1.5px var(--cream); }
+  .member-bio {
+    font-size: 13px;
+    line-height: 1.85;
+    color: var(--cream);
+    opacity: 0.45;
+    max-width: 340px;
+  }
+  .member-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 24px;
+  }
+  .mtag {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 6px 12px;
+    border: 1px solid rgba(237,234,224,0.15);
+    color: var(--cream);
+    opacity: 0.5;
+    transition: opacity 0.2s, border-color 0.2s;
+  }
+  .member:hover .mtag { opacity: 0.75; border-color: rgba(237,234,224,0.3); }
+
+  /* Empty photo placeholder */
+  .member-photo-empty {
+    aspect-ratio: 3/4;
+    background: rgba(237,234,224,0.04);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .member-photo-empty::after {
+    content: 'VM';
+    font-family: var(--font-display);
+    font-size: 96px;
+    color: rgba(237,234,224,0.06);
+    letter-spacing: 4px;
+    pointer-events: none;
+  }
+
+  /* ===== CTA ===== */
+  .cta-section {
+    background: var(--black);
+    padding: 160px 48px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .cta-section::before {
+    content: '';
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 700px; height: 700px;
+    border-radius: 50%;
+    border: 1px solid rgba(237,234,224,0.04);
+    animation: pulseRing 4s ease infinite;
+  }
+  .cta-section::after {
+    content: '';
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 450px; height: 450px;
+    border-radius: 50%;
+    border: 1px solid rgba(237,234,224,0.06);
+    animation: pulseRing 4s 1s ease infinite;
+  }
+  @keyframes pulseRing {
+    0% { transform: translate(-50%,-50%) scale(0.95); opacity: 0; }
+    50% { opacity: 1; }
+    100% { transform: translate(-50%,-50%) scale(1.05); opacity: 0; }
+  }
+  .cta-label { font-family: var(--font-mono); font-size: 9px; letter-spacing: 5px; text-transform: uppercase; color: var(--cream); opacity: 0.3; margin-bottom: 32px; display: block; position: relative; z-index: 1; }
+  .cta-title { font-family: var(--font-display); font-size: clamp(52px, 8vw, 120px); line-height: 0.9; color: var(--cream); max-width: 900px; margin: 0 auto 56px; position: relative; z-index: 1; }
+  .cta-title .outline { color: transparent; -webkit-text-stroke: 1.5px var(--cream); }
+  .cta-buttons { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; position: relative; z-index: 1; }
+  .btn-cream { display: inline-block; padding: 16px 48px; background: var(--cream); color: var(--black); font-family: var(--font-mono); font-size: 10px; letter-spacing: 3px; text-transform: uppercase; text-decoration: none; border: 1.5px solid var(--cream); transition: background 0.25s, color 0.25s; }
+  .btn-cream:hover { background: transparent; color: var(--cream); }
+  .btn-ghost-cream { display: inline-block; padding: 16px 48px; background: transparent; color: var(--cream); font-family: var(--font-mono); font-size: 10px; letter-spacing: 3px; text-transform: uppercase; text-decoration: none; border: 1.5px solid rgba(237,234,224,0.3); transition: border-color 0.25s, background 0.25s; }
+  .btn-ghost-cream:hover { border-color: var(--cream); background: rgba(237,234,224,0.06); }
+
+  /* ===== FOOTER ===== */
+  .footer { background: var(--cream); padding: 48px; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(10,10,10,0.1); flex-wrap: wrap; gap: 24px; }
+  .footer-copy { font-family: var(--font-mono); font-size: 9px; letter-spacing: 2px; opacity: 0.35; text-transform: uppercase; }
+  .footer-links { display: flex; gap: 32px; list-style: none; }
+  .footer-links a { font-family: var(--font-mono); font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--black); text-decoration: none; opacity: 0.4; transition: opacity 0.2s; }
+  .footer-links a:hover { opacity: 0.85; }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 1024px) {
+    .team-grid { grid-template-columns: 1fr 1fr; }
+    .intro { grid-template-columns: 1fr; gap: 32px; }
+  }
+  @media (max-width: 768px) {
+    nav { padding: 20px 24px; }
+    nav.scrolled { padding: 14px 24px; }
+    .nav-links { display: none; }
+    .hamburger { display: flex; }
+    .hero-content { padding: 0 24px 56px; }
+    .intro { padding: 80px 24px 56px; }
+    .team-section { padding: 56px 24px 80px; }
+    .team-grid { grid-template-columns: 1fr; }
+    .cta-section { padding: 100px 24px; }
+    .footer { padding: 32px 24px; }
+  }
+  @media (max-width: 520px) {
+    .team-grid { grid-template-columns: 1fr; }
+    .member-info { padding: 24px 24px 32px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- CURSOR -->
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursor-ring"></div>
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobileMenu">
+  <button class="mobile-close" id="mobileClose">[ ZAMKNIJ ]</button>
+  <a href="index.html">Strona główna</a>
+  <a href="o-nas.html">O Nas</a>
+  <a href="zespol.html">Zespół</a>
+  <a href="spolecznosc.html">Społeczność</a>
+  <a href="blog.html">Blog</a>
+  <a href="sklep.html">Sklep</a>
+  <a href="kontakt.html">Kontakt</a>
+</div>
+
+<!-- NAV -->
+<nav id="navbar">
+  <a href="index.html" class="nav-logo">
+    <img src="VersatileMovement_logo1_png.png" alt="Versatile Movement" class="nav-logo-img">
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="o-nas.html">O Nas</a></li>
+    <li><a href="spolecznosc.html">Społeczność</a></li>
+    <li><a href="zespol.html" class="active">Zespół</a></li>
+    <li><a href="blog.html">Blog</a></li>
+    <li><a href="kontakt.html">Kontakt</a></li>
+    <li class="nav-shop"><a href="sklep.html">Sklep</a></li>
+  </ul>
+  <button class="hamburger" id="hamburger">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <p class="hero-eyebrow">Versatile Movement — Ludzie</p>
+    <h1 class="hero-title">
+      ZES<span class="outline-letter">PÓŁ</span>
+    </h1>
+    <div class="hero-sub-row">
+      <div class="hero-scroll-hint">
+        <div class="hero-scroll-line"></div>
+        Poznaj nas
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-inner">
+    <span>VERSATILE MOVEMENT</span><span class="dot">◆</span>
+    <span>KALISTENIKA</span><span class="dot">◆</span>
+    <span>PERSIAN MEELS</span><span class="dot">◆</span>
+    <span>INDIAN CLUBS</span><span class="dot">◆</span>
+    <span>FILOZOFIA RUCHU</span><span class="dot">◆</span>
+    <span>MOVEMENT</span><span class="dot">◆</span>
+    <span>VERSATILE MOVEMENT</span><span class="dot">◆</span>
+    <span>KALISTENIKA</span><span class="dot">◆</span>
+    <span>PERSIAN MEELS</span><span class="dot">◆</span>
+    <span>INDIAN CLUBS</span><span class="dot">◆</span>
+    <span>FILOZOFIA RUCHU</span><span class="dot">◆</span>
+    <span>MOVEMENT</span><span class="dot">◆</span>
+  </div>
+</div>
+
+<!-- INTRO -->
+<section class="intro">
+  <div>
+    <span class="intro-label reveal">— Zespół</span>
+  </div>
+  <div>
+    <h2 class="intro-title reveal">
+      LUDZIE<br>
+      <span class="outline">ZA RUCHEM</span>
+    </h2>
+    <p class="intro-text reveal reveal-delay-1">
+      Versatile Movement tworzy mała, zdeterminowana ekipa — każdy z nas praktykuje to, czego naucza. Łączy nas jedno: głęboka wiara, że ruch zmienia życie.
+    </p>
+  </div>
+</section>
+
+<!-- TEAM GRID -->
+<section class="team-section">
+  <div class="team-grid">
+
+    <!-- MEMBER 1 -->
+    <div class="member reveal">
+      <div class="member-photo-wrap">
+        <img src="Lapa_meels_mace_.jpg" alt="Karol" class="member-photo">
+        <div class="member-photo-overlay"></div>
+        <div class="member-photo-tint"></div>
+        <span class="member-num">01</span>
+      </div>
+      <div class="member-info">
+        <span class="member-role">Założyciel &amp; Head Coach</span>
+        <h3 class="member-name">KAROL</h3>
+        <p class="member-bio">
+          Twórca Versatile Movement. Od ponad dekady eksploruje trening i ruch jako filozofię - łącząc tradycję starożytnych narzędzi i ćwiczeń z nowoczesną biomechaniką. Dzieli się wiedzą, inspiruje i prowadzi społeczność w stronę świadomego życia.
+        </p>
+        <div class="member-tags">
+          <span class="mtag">Movement</span>
+          <span class="mtag">Indian Clubs</span>
+          <span class="mtag">Persian Meels</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- MEMBER 2 -->
+    <div class="member reveal reveal-delay-1">
+      <div class="member-photo-wrap">
+        <img src="Łapciew_OAHS_2.jpg" alt="Oskar" class="member-photo">
+        <div class="member-photo-overlay"></div>
+        <div class="member-photo-tint"></div>
+        <span class="member-num">02</span>
+      </div>
+      <div class="member-info">
+        <span class="member-role">Współtwórca &amp; Coach</span>
+        <h3 class="member-name">OSKAR</h3>
+        <p class="member-bio">
+          Współtwórca Versatile Movement. Specjalizuje się w treningu z wykorzystaniem własnej masy ciała, rozwijając siłę, mobilność i kontrolę ruchu, stawiając na funkcjonalne i wszechstronne podejście do treningu. Naucza i inspiruje, wspierając rozwój społeczności.
+        </p>
+        <div class="member-tags">
+          <span class="mtag">Calisthenics</span>
+          <span class="mtag">Bodyweight</span>
+          <span class="mtag">Practice</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- MEMBER 3 -->
+    <div class="member reveal reveal-delay-2">
+      <div class="member-photo-wrap">
+        <img src="Budensflag.jpg" alt="Kacper" class="member-photo" style="object-position: center 20%;">
+        <div class="member-photo-overlay"></div>
+        <div class="member-photo-tint"></div>
+        <span class="member-num">03</span>
+      </div>
+      <div class="member-info">
+        <span class="member-role">Ambasador Marki</span>
+        <h3 class="member-name">KACPER</h3>
+        <p class="member-bio">
+          Ambasador marki Versatile Movement. Reprezentuje podejście oparte na świadomym ruchu, sile funkcjonalnej i pracy z własnym ciałem. Dzieli się doświadczeniem i swoją drogą, inspiruje do treningu i pokazuje naturalne podejście do rozwoju sprawności. Pasja, spójność, autentyczność.
+        </p>
+        <div class="member-tags">
+          <span class="mtag">Unconventional</span>
+          <span class="mtag">Strength</span>
+          <span class="mtag">Experience</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <span class="cta-label reveal">— Dołącz do nas</span>
+  <h2 class="cta-title reveal reveal-delay-1">
+    TRENUJ<br>
+    Z <span class="outline">NAMI</span>
+  </h2>
+  <div class="cta-buttons reveal reveal-delay-2">
+    <a href="spolecznosc.html" class="btn-cream">Nasza społeczność</a>
+    <a href="kontakt.html" class="btn-ghost-cream">Napisz do nas</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <p class="footer-copy">© 2026 Versatile Movement — Wszelkie prawa zastrzeżone</p>
+  <ul class="footer-links">
+    <li><a href="o-nas.html">O Nas</a></li>
+    <li><a href="zespol.html">Zespół</a></li>
+    <li><a href="spolecznosc.html">Społeczność</a></li>
+    <li><a href="sklep.html">Sklep</a></li>
+  </ul>
+</footer>
+
+<script>
+  /* CURSOR */
+  const cursor = document.getElementById('cursor');
+  const cursorRing = document.getElementById('cursor-ring');
+  document.addEventListener('mousemove', e => {
+    cursor.style.left = e.clientX + 'px';
+    cursor.style.top = e.clientY + 'px';
+    cursorRing.style.left = e.clientX + 'px';
+    cursorRing.style.top = e.clientY + 'px';
+  });
+  document.querySelectorAll('a, button').forEach(el => {
+    el.addEventListener('mouseenter', () => {
+      cursor.style.transform = 'translate(-50%,-50%) scale(2.2)';
+      cursorRing.style.transform = 'translate(-50%,-50%) scale(1.5)';
+      cursorRing.style.opacity = '0.25';
+    });
+    el.addEventListener('mouseleave', () => {
+      cursor.style.transform = 'translate(-50%,-50%) scale(1)';
+      cursorRing.style.transform = 'translate(-50%,-50%) scale(1)';
+      cursorRing.style.opacity = '0.5';
+    });
+  });
+
+  /* NAV SCROLL */
+  const navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    navbar.classList.toggle('scrolled', window.scrollY > 40);
+  });
+
+  /* MOBILE MENU */
+  const hamburger = document.getElementById('hamburger');
+  const mobileMenu = document.getElementById('mobileMenu');
+  const mobileClose = document.getElementById('mobileClose');
+  hamburger.addEventListener('click', () => mobileMenu.classList.add('open'));
+  mobileClose.addEventListener('click', () => mobileMenu.classList.remove('open'));
+
+  /* REVEAL ON SCROLL */
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  reveals.forEach(el => observer.observe(el));
+</script>
+</body>
+</html>

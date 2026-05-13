@@ -1,0 +1,1944 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Versatile Movement — When We Change The Way We Move, We Change The Way We Live</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;600;700;900&family=Bebas+Neue&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  /* ===== RESET & BASE ===== */
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  :root {
+    --cream: #EDEAE0;
+    --black: #0A0A0A;
+    --white: #FAFAF7;
+    --mid: #888880;
+    --accent: #0A0A0A;
+    --font-display: 'Bebas Neue', sans-serif;
+    --font-mono: 'Space Mono', 'Courier New', monospace;
+    --font-body: 'Nunito Sans', sans-serif;
+  }
+
+  html { scroll-behavior: smooth; overflow-x: hidden; }
+
+  body {
+    background: var(--cream);
+    color: var(--black);
+    font-family: var(--font-body);
+    cursor: none;
+    overflow-x: hidden;
+  }
+
+  /* ===== CUSTOM CURSOR ===== */
+  .cursor {
+    position: fixed;
+    width: 10px; height: 10px;
+    background: #FAFAF7;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%, -50%);
+    transition: transform 0.1s ease;
+    mix-blend-mode: difference;
+  }
+  .cursor-ring {
+    position: fixed;
+    width: 36px; height: 36px;
+    border: 1.5px solid #FAFAF7;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9998;
+    transform: translate(-50%, -50%);
+    transition: all 0.18s ease;
+    opacity: 0.5;
+    mix-blend-mode: difference;
+  }
+  body:hover .cursor { opacity: 1; }
+
+  /* ===== SCROLLBAR ===== */
+  ::-webkit-scrollbar { width: 3px; }
+  ::-webkit-scrollbar-track { background: var(--cream); }
+  ::-webkit-scrollbar-thumb { background: var(--black); }
+
+  /* ===== NAV ===== */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 24px 48px;
+    mix-blend-mode: normal;
+    transition: background 0.4s ease, padding 0.4s ease;
+  }
+  nav.scrolled {
+    background: rgba(237,234,224,0.92);
+    backdrop-filter: blur(12px);
+    padding: 16px 48px;
+    border-bottom: 1px solid rgba(10,10,10,0.08);
+  }
+  /* Over dark video hero — cream links */
+  nav:not(.scrolled) .nav-links a { color: var(--cream); }
+  nav:not(.scrolled) .nav-links a::after { background: var(--cream); }
+  nav:not(.scrolled) .nav-links .nav-shop a { background: var(--cream); color: var(--black); }
+  nav:not(.scrolled) .nav-links .nav-shop a:hover { background: transparent; color: var(--cream); }
+  nav:not(.scrolled) .hamburger span { background: var(--cream); }
+  .nav-logo {
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    line-height: 1;
+  }
+  .nav-logo-img {
+    height: 56px;
+    width: auto;
+    display: block;
+    transition: opacity 0.2s, filter 0.3s;
+  }
+  .nav-logo-img:hover { opacity: 0.75; }
+  .nav-logo span { display: none; }
+
+  .nav-links {
+    display: flex;
+    gap: 36px;
+    list-style: none;
+  }
+  .nav-links a {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--black);
+    text-decoration: none;
+    opacity: 0.6;
+    transition: opacity 0.2s, color 0.3s;
+    position: relative;
+  }
+  .nav-links a::after {
+    content: '';
+    position: absolute;
+    bottom: -3px; left: 0; right: 0;
+    height: 1px;
+    background: var(--black);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+  }
+  .nav-links a:hover { opacity: 1; }
+  .nav-links a:hover::after { transform: scaleX(1); }
+  .nav-links .nav-shop a {
+    opacity: 1;
+    background: var(--black);
+    color: var(--cream);
+    padding: 8px 18px;
+    letter-spacing: 2px;
+    transition: background 0.2s, color 0.2s;
+  }
+  .nav-links .nav-shop a:hover { background: transparent; color: var(--black); border: 1px solid var(--black); }
+  .nav-links .nav-shop a::after { display: none; }
+
+  .hamburger {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    cursor: none;
+    background: none;
+    border: none;
+    padding: 4px;
+  }
+  .hamburger span {
+    display: block;
+    width: 28px; height: 1.5px;
+    background: var(--black);
+    transition: all 0.3s;
+  }
+
+  /* ===== MOBILE MENU ===== */
+  .mobile-menu {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: var(--black);
+    z-index: 99;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 32px;
+  }
+  .mobile-menu.open { display: flex; }
+  .mobile-menu a {
+    font-family: var(--font-display);
+    font-size: clamp(36px, 8vw, 72px);
+    color: var(--cream);
+    text-decoration: none;
+    letter-spacing: 4px;
+    transition: opacity 0.2s;
+    opacity: 0.8;
+  }
+  .mobile-menu a:hover { opacity: 1; }
+  .mobile-close {
+    position: absolute;
+    top: 28px; right: 48px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--cream);
+    cursor: none;
+    background: none;
+    border: none;
+    letter-spacing: 2px;
+    opacity: 0.6;
+  }
+
+  /* ===== HERO ===== */
+  #home {
+    min-height: 100vh;
+    display: grid;
+    grid-template-rows: 1fr auto;
+    padding-top: 80px;
+    position: relative;
+    overflow: hidden;
+  }
+  /* VIDEO BACKGROUND */
+  .hero-video-wrap {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .hero-video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center center;
+    filter: saturate(0.75) contrast(1.05);
+    pointer-events: none;
+  }
+  .hero-video-overlay {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(to bottom,
+        rgba(10,10,10,0.45) 0%,
+        rgba(10,10,10,0.25) 40%,
+        rgba(10,10,10,0.55) 80%,
+        rgba(10,10,10,0.85) 100%
+      );
+    pointer-events: none;
+  }
+  /* Subtle grain texture over video */
+  .hero-video-grain {
+    position: absolute;
+    inset: 0;
+    opacity: 0.04;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    background-size: 200px 200px;
+    pointer-events: none;
+  }
+  .hero-inner {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0 48px;
+    position: relative;
+    z-index: 2;
+  }
+  .hero-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--cream);
+    opacity: 0.5;
+    margin-bottom: 24px;
+    animation: fadeUp 1s 0.2s both;
+  }
+  .hero-title {
+    font-family: var(--font-display);
+    font-size: clamp(80px, 14vw, 200px);
+    line-height: 0.9;
+    letter-spacing: -2px;
+    color: var(--cream);
+    animation: fadeUp 1s 0.3s both;
+    position: relative;
+  }
+  .hero-title .line-2 {
+    display: block;
+    padding-left: clamp(60px, 10vw, 180px);
+    color: transparent;
+    -webkit-text-stroke: 1.5px var(--cream);
+  }
+  .hero-sub {
+    margin-top: 40px;
+    display: flex;
+    align-items: flex-start;
+    gap: 48px;
+    animation: fadeUp 1s 0.5s both;
+  }
+  .hero-tagline {
+    font-family: var(--font-mono);
+    font-size: clamp(10px, 1.2vw, 13px);
+    letter-spacing: 2px;
+    line-height: 1.9;
+    max-width: 380px;
+    color: var(--cream);
+    opacity: 0.6;
+    text-transform: uppercase;
+  }
+  .hero-cta {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-left: auto;
+    align-self: flex-end;
+  }
+  .btn-primary {
+    display: inline-block;
+    padding: 14px 32px;
+    background: var(--black);
+    color: var(--cream);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: all 0.25s;
+    border: 1.5px solid var(--black);
+  }
+  .btn-primary:hover { background: transparent; color: var(--black); }
+  .btn-secondary {
+    display: inline-block;
+    padding: 14px 32px;
+    background: transparent;
+    color: var(--cream);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    text-decoration: none;
+    border: 1.5px solid rgba(237,234,224,0.45);
+    transition: all 0.25s;
+  }
+  .btn-secondary:hover { background: rgba(237,234,224,0.1); border-color: var(--cream); color: var(--cream); }
+
+  /* Hero-specific button overrides for dark video bg */
+  #home .btn-primary {
+    background: var(--cream);
+    color: var(--black);
+    border-color: var(--cream);
+  }
+  #home .btn-primary:hover {
+    background: transparent;
+    color: var(--cream);
+  }
+
+  /* Spiral animation */
+  .hero-spiral {
+    position: absolute;
+    right: -80px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: clamp(300px, 40vw, 600px);
+    height: clamp(300px, 40vw, 600px);
+    opacity: 0.07;
+    animation: spinSlow 40s linear infinite;
+    z-index: 2;
+  }
+  @keyframes spinSlow { to { transform: translateY(-50%) rotate(360deg); } }
+  /* Scroll-down hint */
+  .hero-scroll-cue {
+    position: absolute;
+    bottom: 52px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    z-index: 3;
+    animation: fadeUp 1s 1.2s both;
+  }
+  .hero-scroll-cue span {
+    font-family: var(--font-mono);
+    font-size: 8px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--cream);
+    opacity: 0.35;
+  }
+  .hero-scroll-line {
+    width: 1px;
+    height: 40px;
+    background: var(--cream);
+    opacity: 0.25;
+    animation: scrollLine 2s ease-in-out infinite;
+    transform-origin: top;
+  }
+  @keyframes scrollLine {
+    0%, 100% { transform: scaleY(0); opacity: 0; transform-origin: top; }
+    40% { transform: scaleY(1); opacity: 0.25; transform-origin: top; }
+    60% { transform: scaleY(1); opacity: 0.25; transform-origin: bottom; }
+    100% { transform: scaleY(0); opacity: 0; transform-origin: bottom; }
+  }
+  /* Video mute toggle */
+  .video-ctrl {
+    position: absolute;
+    bottom: 80px;
+    right: 48px;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: none;
+    background: none;
+    border: 1px solid rgba(237,234,224,0.2);
+    padding: 8px 16px;
+    font-family: var(--font-mono);
+    font-size: 8px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--cream);
+    opacity: 0.5;
+    transition: opacity 0.2s, border-color 0.2s;
+    animation: fadeUp 1s 1.4s both;
+  }
+  .video-ctrl:hover { opacity: 1; border-color: rgba(237,234,224,0.6); }
+
+  .hero-figure {
+    position: absolute;
+    right: clamp(40px, 8vw, 120px);
+    bottom: 0;
+    height: 70vh;
+    opacity: 0.12;
+    pointer-events: none;
+    filter: contrast(1.5);
+    animation: fadeUp 1.2s 0.6s both;
+  }
+
+  /* Marquee ticker */
+  .ticker {
+    border-top: 1px solid rgba(10,10,10,0.12);
+    border-bottom: 1px solid rgba(10,10,10,0.12);
+    overflow: hidden;
+    padding: 12px 0;
+    background: var(--black);
+    margin-top: 48px;
+  }
+  .ticker-inner {
+    display: flex;
+    gap: 80px;
+    animation: ticker 25s linear infinite;
+    white-space: nowrap;
+    width: max-content;
+  }
+  .ticker-inner span {
+    font-family: var(--font-display);
+    font-size: 14px;
+    letter-spacing: 6px;
+    color: var(--cream);
+    opacity: 0.8;
+  }
+  .ticker-inner .dot { opacity: 0.3; }
+  @keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+  /* ===== SECTIONS BASE ===== */
+  section { padding: 120px 48px; }
+  .section-label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    opacity: 0.35;
+    margin-bottom: 16px;
+    display: block;
+  }
+  .section-num {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    opacity: 0.2;
+    margin-right: 12px;
+  }
+  h2 {
+    font-family: var(--font-display);
+    font-size: clamp(48px, 7vw, 100px);
+    letter-spacing: 1px;
+    line-height: 0.95;
+  }
+  .divider {
+    width: 100%;
+    height: 1px;
+    background: rgba(10,10,10,0.1);
+    margin: 0 48px;
+    width: calc(100% - 96px);
+  }
+
+  /* ===== O NAS ===== */
+  #o-nas {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: start;
+  }
+  .o-nas-left {}
+  .o-nas-title { margin-top: 20px; }
+  .o-nas-title .outline {
+    color: transparent;
+    -webkit-text-stroke: 1.5px var(--black);
+  }
+  .o-nas-body {
+    margin-top: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  .o-nas-body p {
+    font-size: clamp(14px, 1.5vw, 17px);
+    line-height: 1.8;
+    opacity: 0.75;
+  }
+  .philosophy-list {
+    margin-top: 40px;
+    border-top: 1px solid rgba(10,10,10,0.12);
+  }
+  .philosophy-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 20px 0;
+    border-bottom: 1px solid rgba(10,10,10,0.08);
+    overflow: hidden;
+  }
+  .philosophy-item .p-num {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    opacity: 0.3;
+    padding-top: 4px;
+    min-width: 28px;
+  }
+  .philosophy-item .p-title {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .philosophy-item .p-desc {
+    font-size: 13px;
+    line-height: 1.6;
+    opacity: 0.6;
+  }
+  .o-nas-right {
+    position: sticky;
+    top: 120px;
+  }
+  .o-nas-visual {
+    position: relative;
+    background: var(--black);
+    padding: 48px;
+    min-height: 500px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    overflow: hidden;
+  }
+  .o-nas-visual::before {
+    content: 'VM';
+    position: absolute;
+    top: -20px; right: -10px;
+    font-family: var(--font-display);
+    font-size: 200px;
+    color: rgba(255,255,255,0.03);
+    line-height: 1;
+    pointer-events: none;
+  }
+  .o-nas-quote {
+    position: relative;
+    z-index: 1;
+  }
+  .o-nas-quote::before {
+    content: '"';
+    display: block;
+    font-family: var(--font-display);
+    font-size: 80px;
+    line-height: 0.6;
+    margin-bottom: 16px;
+    opacity: 0.2;
+    color: var(--cream);
+  }
+  /* Fixed-height wrapper so all slides stack without causing jumps */
+  .quote-slides-wrap {
+    position: relative;
+    height: 6em; /* enough for 3-line quotes at max font size */
+  }
+  .quote-slide {
+    font-family: var(--font-mono);
+    font-size: clamp(13px, 1.6vw, 18px);
+    line-height: 1.7;
+    color: var(--cream);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    opacity: 0;
+    transition: opacity 1.4s ease;
+    pointer-events: none;
+  }
+  .quote-slide.active {
+    opacity: 0.9;
+    pointer-events: auto;
+  }
+  /* Progress dots */
+  .quote-dots {
+    display: flex;
+    gap: 6px;
+    margin-top: 20px;
+  }
+  .quote-dot {
+    width: 18px;
+    height: 1px;
+    background: var(--cream);
+    opacity: 0.2;
+    transition: opacity 0.4s ease, width 0.4s ease;
+    cursor: none;
+  }
+  .quote-dot.active {
+    opacity: 0.6;
+    width: 32px;
+  }
+  .o-nas-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 32px;
+  }
+  .tag {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 7px 14px;
+    border: 1px solid rgba(237,234,224,0.2);
+    color: var(--cream);
+  }
+
+  /* ===== SKLEP ===== */
+  #sklep { background: var(--black); color: var(--cream); }
+  #sklep .section-label { color: var(--cream); opacity: 0.3; }
+  #sklep h2 { color: var(--cream); }
+  .shop-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 64px;
+    gap: 32px;
+  }
+  .shop-sub {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 1px;
+    line-height: 1.8;
+    opacity: 0.45;
+    max-width: 340px;
+    text-align: right;
+  }
+  .products-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    margin-bottom: 64px;
+  }
+  .product-card {
+    background: rgba(255,255,255,0.04);
+    padding: 40px 32px;
+    transition: background 0.3s;
+    position: relative;
+    overflow: hidden;
+    cursor: none;
+    min-height: 320px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+  }
+  .product-card:hover { background: rgba(255,255,255,0.08); }
+  .product-card::before {
+    content: attr(data-num);
+    position: absolute;
+    top: 24px; right: 24px;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    opacity: 0.2;
+    letter-spacing: 2px;
+  }
+  .product-icon {
+    font-family: var(--font-display);
+    font-size: 64px;
+    line-height: 1;
+    opacity: 0.08;
+    position: absolute;
+    top: 20px; left: 28px;
+    transition: opacity 0.3s, transform 0.3s;
+  }
+  .product-card:hover .product-icon { opacity: 0.15; transform: scale(1.05); }
+  .product-name {
+    font-family: var(--font-display);
+    font-size: clamp(28px, 3vw, 42px);
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+    color: var(--cream);
+  }
+  .product-desc {
+    font-size: 12px;
+    line-height: 1.7;
+    opacity: 0.45;
+    margin-bottom: 24px;
+  }
+  .product-tag {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 6px 12px;
+    border: 1px solid rgba(255,255,255,0.15);
+    color: var(--cream);
+    opacity: 0.7;
+    transition: opacity 0.2s, border-color 0.2s;
+  }
+  .product-card:hover .product-tag { opacity: 1; border-color: rgba(255,255,255,0.4); }
+  .product-card.featured {
+    background: rgba(255,255,255,0.08);
+    grid-row: span 1;
+  }
+  .shop-cta {
+    display: flex;
+    justify-content: center;
+  }
+  .btn-cream {
+    display: inline-block;
+    padding: 16px 48px;
+    background: var(--cream);
+    color: var(--black);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: all 0.25s;
+  }
+  .btn-cream:hover { background: transparent; color: var(--cream); border: 1.5px solid var(--cream); }
+
+  /* ===== COMMUNITY / SPOŁECZNOŚĆ ===== */
+  #spolecznosc {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 80px;
+    align-items: center;
+  }
+  .comm-left {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    transform: rotate(180deg);
+  }
+  .comm-left h2 {
+    letter-spacing: 8px;
+    font-size: clamp(48px, 6vw, 80px);
+  }
+  .comm-right {}
+  .comm-text {
+    font-size: clamp(16px, 2vw, 22px);
+    line-height: 1.8;
+    opacity: 0.75;
+    max-width: 640px;
+    margin-bottom: 48px;
+  }
+  .comm-values {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1px;
+    background: rgba(10,10,10,0.1);
+    border: 1px solid rgba(10,10,10,0.1);
+    margin-bottom: 48px;
+  }
+  .comm-value {
+    background: var(--cream);
+    padding: 28px 24px;
+    transition: background 0.3s;
+  }
+  .comm-value:hover { background: var(--black); color: var(--cream); }
+  .comm-value-title {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .comm-value-desc { font-size: 12px; line-height: 1.6; opacity: 0.6; }
+  .comm-value:hover .comm-value-desc { opacity: 0.7; }
+  .comm-stats {
+    display: flex;
+    gap: 48px;
+    flex-wrap: wrap;
+  }
+  .stat { display: flex; flex-direction: column; gap: 6px; }
+  .stat-num {
+    font-family: var(--font-display);
+    font-size: clamp(40px, 5vw, 64px);
+    line-height: 1;
+    letter-spacing: 2px;
+  }
+  .stat-label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    opacity: 0.4;
+  }
+
+  /* ===== TEAM / ZESPÓŁ ===== */
+  #zespol { background: var(--white); }
+  .team-header { margin-bottom: 72px; }
+  .team-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+  }
+  .team-card {
+    position: relative;
+    overflow: hidden;
+    cursor: none;
+  }
+  .team-card-img {
+    width: 100%;
+    aspect-ratio: 3/4;
+    background: var(--black);
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .team-card-img .placeholder-silhouette {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-display);
+    font-size: 120px;
+    color: rgba(255,255,255,0.06);
+    overflow: hidden;
+  }
+  .team-card-img .team-overlay {
+    position: absolute;
+    bottom: 0; left: 0; right: 0; top: 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(0,0,0,0.15) 0%,
+      rgba(0,0,0,0.55) 40%,
+      rgba(0,0,0,0.92) 100%
+    );
+    padding: 32px 24px 28px;
+    display: flex; align-items: flex-end;
+    transform: translateY(100%);
+    transition: transform 0.4s ease;
+  }
+  .team-card:hover .team-overlay { transform: translateY(0); }
+  .team-overlay-text {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    line-height: 1.8;
+    color: var(--cream);
+    opacity: 1;
+    text-shadow: 0 1px 6px rgba(0,0,0,0.6);
+  }
+  .team-name {
+    font-family: var(--font-display);
+    font-size: clamp(22px, 2.5vw, 32px);
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+  }
+  .team-role {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    opacity: 0.4;
+  }
+  .team-card-num {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    opacity: 0.2;
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  /* ===== BLOG ===== */
+  #blog { 
+    background: var(--cream);
+    border-top: 1px solid rgba(10,10,10,0.08);
+  }
+  .blog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 64px;
+  }
+  .blog-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 2px;
+  }
+  .blog-card {
+    background: rgba(10,10,10,0.03);
+    padding: 36px 32px;
+    transition: background 0.3s;
+    cursor: none;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .blog-card:hover { background: rgba(10,10,10,0.08); }
+  .blog-card.featured { padding: 48px 40px; }
+  .blog-cat {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    opacity: 0.35;
+  }
+  .blog-title {
+    font-family: var(--font-display);
+    font-size: clamp(20px, 2.5vw, 34px);
+    letter-spacing: 1px;
+    line-height: 1.1;
+  }
+  .blog-card.featured .blog-title { font-size: clamp(28px, 4vw, 52px); }
+  .blog-excerpt {
+    font-size: 13px;
+    line-height: 1.7;
+    opacity: 0.55;
+    flex: 1;
+  }
+  .blog-meta {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    opacity: 0.3;
+    letter-spacing: 1px;
+    margin-top: auto;
+  }
+  .blog-read-more {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--black);
+    text-decoration: none;
+    opacity: 0.5;
+    transition: opacity 0.2s;
+  }
+  .blog-read-more::after { content: '→'; }
+  .blog-card:hover .blog-read-more { opacity: 1; }
+
+  /* ===== SOCIAL MEDIA ===== */
+  #social {
+    background: var(--black);
+    color: var(--cream);
+    text-align: center;
+    padding: 100px 48px;
+  }
+  #social .section-label { color: var(--cream); opacity: 0.3; display: block; margin-bottom: 12px; }
+  #social h2 { color: var(--cream); margin-bottom: 16px; }
+  .social-sub {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 1px;
+    opacity: 0.4;
+    margin-bottom: 64px;
+  }
+  .social-links {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+  .social-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 32px 40px;
+    border: 1px solid rgba(237,234,224,0.08);
+    text-decoration: none;
+    color: var(--cream);
+    transition: all 0.3s;
+    min-width: 160px;
+    cursor: none;
+  }
+  .social-item:hover {
+    background: var(--cream);
+    color: var(--black);
+    border-color: var(--cream);
+  }
+  .social-platform {
+    font-family: var(--font-display);
+    font-size: 20px;
+    letter-spacing: 4px;
+  }
+  .social-handle {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 1px;
+    opacity: 0.4;
+  }
+  .social-item:hover .social-handle { opacity: 0.7; }
+
+  /* ===== KONTAKT ===== */
+  #kontakt {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: start;
+  }
+  .contact-left h2 { margin-top: 16px; }
+  .contact-left .contact-sub {
+    margin-top: 28px;
+    font-size: 15px;
+    line-height: 1.8;
+    opacity: 0.6;
+    max-width: 380px;
+  }
+  .contact-info {
+    margin-top: 48px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  .contact-info-item { display: flex; flex-direction: column; gap: 4px; }
+  .contact-info-label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    opacity: 0.3;
+  }
+  .contact-info-value {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .contact-right {
+    padding-top: 8px;
+  }
+  .contact-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .form-group { display: flex; flex-direction: column; gap: 8px; }
+  .form-label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    opacity: 0.35;
+  }
+  .form-input, .form-textarea {
+    background: transparent;
+    border: none;
+    border-bottom: 1.5px solid rgba(10,10,10,0.15);
+    padding: 12px 0;
+    font-family: var(--font-body);
+    font-size: 14px;
+    color: var(--black);
+    outline: none;
+    transition: border-color 0.3s;
+    width: 100%;
+  }
+  .form-input:focus, .form-textarea:focus { border-color: var(--black); }
+  .form-textarea { resize: none; min-height: 100px; }
+  .form-submit {
+    margin-top: 8px;
+    padding: 14px 40px;
+    background: var(--black);
+    color: var(--cream);
+    border: 1.5px solid var(--black);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    cursor: none;
+    transition: all 0.25s;
+    align-self: flex-start;
+  }
+  .form-submit:hover { background: transparent; color: var(--black); }
+
+  /* ===== FOOTER ===== */
+  footer {
+    background: var(--black);
+    color: var(--cream);
+    padding: 64px 48px 32px;
+  }
+  .footer-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 64px;
+    gap: 48px;
+  }
+  .footer-brand {}
+  .footer-logo {
+    font-family: var(--font-display);
+    font-size: 28px;
+    letter-spacing: 6px;
+    margin-bottom: 8px;
+    display: block;
+  }
+  .footer-tagline {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 2px;
+    opacity: 0.3;
+    max-width: 280px;
+    line-height: 1.8;
+    text-transform: uppercase;
+  }
+  .footer-links {
+    display: flex;
+    gap: 64px;
+    flex-wrap: wrap;
+  }
+  .footer-col h4 {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    opacity: 0.3;
+    margin-bottom: 20px;
+  }
+  .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .footer-col a {
+    color: var(--cream);
+    text-decoration: none;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 1px;
+    opacity: 0.55;
+    transition: opacity 0.2s;
+  }
+  .footer-col a:hover { opacity: 1; }
+  .footer-bottom {
+    border-top: 1px solid rgba(237,234,224,0.08);
+    padding-top: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .footer-copy {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    opacity: 0.25;
+    letter-spacing: 1px;
+  }
+  .footer-motto {
+    font-family: var(--font-display);
+    font-size: 13px;
+    letter-spacing: 4px;
+    opacity: 0.3;
+  }
+
+  /* ===== ANIMATIONS ===== */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .reveal {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .reveal-delay-1 { transition-delay: 0.1s; }
+  .reveal-delay-2 { transition-delay: 0.2s; }
+  .reveal-delay-3 { transition-delay: 0.3s; }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 1024px) {
+    #o-nas, #kontakt { grid-template-columns: 1fr; }
+    #spolecznosc { grid-template-columns: 1fr; }
+    .comm-left { writing-mode: horizontal-tb; transform: none; }
+    .products-grid { grid-template-columns: repeat(2, 1fr); }
+    .blog-grid { grid-template-columns: 1fr 1fr; }
+    .blog-card:first-child { grid-column: span 2; }
+    .team-grid { grid-template-columns: repeat(2, 1fr); }
+    .o-nas-right { position: static; }
+  }
+  @media (max-width: 768px) {
+    nav { padding: 20px 24px; }
+    nav.scrolled { padding: 14px 24px; }
+    .nav-links { display: none; }
+    .hamburger { display: flex; }
+    section { padding: 64px 20px; }
+    .hero-inner { padding: 0 20px; }
+    .ticker-inner { gap: 40px; }
+    .ticker-inner span { font-size: 11px; letter-spacing: 4px; }
+    .hero-title { font-size: clamp(52px, 15vw, 90px); }
+    .hero-cta { margin-left: 0; margin-top: 20px; flex-direction: column; gap: 10px; align-items: flex-start; }
+    .hero-sub { flex-wrap: wrap; gap: 20px; }
+    .btn-primary, .btn-secondary { padding: 12px 24px; font-size: 9px; }
+    /* SKLEP MOBILE */
+    #sklep { padding: 64px 20px; }
+    .products-grid { grid-template-columns: 1fr; gap: 2px; }
+    .product-card { min-height: 200px; padding: 28px 20px; }
+    .product-card[style*="span 2"] { grid-column: span 1 !important; }
+    .shop-header { flex-direction: column; align-items: flex-start; gap: 16px; }
+    .shop-sub { text-align: left; max-width: 100%; }
+    /* BLOG MOBILE */
+    .blog-grid { grid-template-columns: 1fr; }
+    .blog-card:first-child { grid-column: auto; }
+    .blog-card { padding: 24px 20px; }
+    /* TEAM MOBILE */
+    .team-grid { grid-template-columns: 1fr; }
+    /* SOCIAL MOBILE */
+    .social-links { gap: 2px; flex-direction: column; }
+    .social-item { min-width: unset; padding: 20px 24px; flex-direction: row; justify-content: space-between; }
+    /* SOCIAL COMM MOBILE */
+    #spolecznosc { grid-template-columns: 1fr; padding: 64px 20px; }
+    .comm-values { grid-template-columns: 1fr; }
+    .comm-stats { gap: 28px; }
+    /* KONTAKT MOBILE */
+    #kontakt { grid-template-columns: 1fr; padding: 64px 20px; }
+    /* FOOTER MOBILE */
+    footer { padding: 48px 20px 28px; }
+    .footer-top { flex-direction: column; gap: 32px; }
+    .footer-links { gap: 32px; flex-wrap: wrap; }
+    /* MISC */
+    .comm-left { writing-mode: horizontal-tb; transform: none; }
+    .shop-cta { padding: 0; }
+    .divider { margin: 0 20px; width: calc(100% - 40px); }
+    .mobile-close { right: 24px; }
+    h2 { font-size: clamp(36px, 10vw, 64px); }
+  }
+
+  /* Loader */
+  #loader {
+    position: fixed;
+    inset: 0;
+    background: var(--black);
+    z-index: 9000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 24px;
+    transition: opacity 0.6s ease, visibility 0.6s ease;
+  }
+  #loader.done { opacity: 0; visibility: hidden; }
+  .loader-logo {
+    width: clamp(180px, 40vw, 320px);
+    height: auto;
+    display: block;
+    /* logo is black on white bg — invert for black loader bg */
+    filter: invert(1);
+    animation: pulse 1.4s ease infinite;
+  }
+  .loader-sub {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 6px;
+    color: var(--cream);
+    opacity: 0.3;
+    text-transform: uppercase;
+  }
+  .loader-bar {
+    width: 200px;
+    height: 1px;
+    background: rgba(237,234,224,0.15);
+    position: relative;
+    overflow: hidden;
+  }
+  .loader-bar::after {
+    content: '';
+    position: absolute;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: var(--cream);
+    animation: load 1.8s ease forwards;
+  }
+  @keyframes load { to { left: 100%; } }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+</style>
+</head>
+<body>
+
+<!-- LOADER -->
+<div id="loader">
+  <img src="VersatileMovement_logo1_png.webp" alt="Versatile Movement" class="loader-logo">
+  <div class="loader-bar"></div>
+  <div class="loader-sub">Versatile Movement</div>
+</div>
+
+<!-- CUSTOM CURSOR -->
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- NAVIGATION -->
+<nav id="navbar">
+  <a href="index.html" class="nav-logo">
+    <img src="VersatileMovement_logo1_png.webp" alt="Versatile Movement" class="nav-logo-img">
+  </a>
+  <ul class="nav-links">
+    <li><a href="index.html" class="active">Home</a></li>
+    <li><a href="o-nas.html">O nas</a></li>
+    <li><a href="spolecznosc.html">Społeczność</a></li>
+    <li><a href="zespol.html">Zespół</a></li>
+    <li><a href="blog.html">Blog</a></li>
+    <li><a href="kontakt.html">Kontakt</a></li>
+    <li class="nav-shop"><a href="sklep.html">Sklep</a></li>
+  </ul>
+  <button class="hamburger" id="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobileMenu">
+  <button class="mobile-close" id="mobileClose">ZAMKNIJ</button>
+  <a href="index.html" onclick="closeMobile()">HOME</a>
+  <a href="o-nas.html" onclick="closeMobile()">O NAS</a>
+  <a href="spolecznosc.html" onclick="closeMobile()">SPOŁECZNOŚĆ</a>
+  <a href="zespol.html" onclick="closeMobile()">ZESPÓŁ</a>
+  <a href="blog.html" onclick="closeMobile()">BLOG</a>
+  <a href="kontakt.html" onclick="closeMobile()">KONTAKT</a>
+  <a href="sklep.html" onclick="closeMobile()">SKLEP</a>
+</div>
+
+<!-- ===================== HERO ===================== -->
+<section id="home">
+  <!-- VIDEO BACKGROUND -->
+  <div class="hero-video-wrap">
+    <video
+      class="hero-video"
+      id="heroVideo"
+      autoplay
+      loop
+      muted
+      playsinline
+      preload="auto"
+    >
+      <source src="Versatile Movement Trailer.mp4" type="video/mp4">
+    </video>
+    <div class="hero-video-overlay"></div>
+    <div class="hero-video-grain"></div>
+  </div>
+
+  <div class="hero-inner">
+    <span class="hero-eyebrow">Pierwsza w Polsce — Marka ruchu</span>
+    <h1 class="hero-title">
+      VERSATILE
+      <span class="line-2">MOVEMENT</span>
+    </h1>
+    <div class="hero-sub">
+      <p class="hero-tagline">When we change the way we move,<br>we change the way we live.</p>
+      <div class="hero-cta">
+        <a href="sklep.html" class="btn-primary">Odkryj Sklep</a>
+        <a href="o-nas.html" class="btn-secondary">O Nas</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scroll cue -->
+  <div class="hero-scroll-cue">
+    <span>Scroll</span>
+    <div class="hero-scroll-line"></div>
+  </div>
+
+  <!-- Sound toggle -->
+  <button class="video-ctrl" id="videoCtrl" onclick="toggleMute()">
+    <span id="videoCtrlLabel">♪ dźwięk</span>
+  </button>
+
+  <!-- Decorative spiral SVG -->
+  <svg class="hero-spiral" viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <g>
+      <circle cx="250" cy="250" r="240" stroke="#EDEAE0" stroke-width="1"/>
+      <circle cx="250" cy="250" r="210" stroke="#EDEAE0" stroke-width="0.8"/>
+      <circle cx="250" cy="250" r="180" stroke="#EDEAE0" stroke-width="0.8"/>
+      <circle cx="250" cy="250" r="150" stroke="#EDEAE0" stroke-width="0.8"/>
+      <circle cx="250" cy="250" r="120" stroke="#EDEAE0" stroke-width="0.8"/>
+      <circle cx="250" cy="250" r="90" stroke="#EDEAE0" stroke-width="0.8"/>
+      <circle cx="250" cy="250" r="60" stroke="#EDEAE0" stroke-width="0.8"/>
+      <circle cx="250" cy="250" r="30" stroke="#EDEAE0" stroke-width="0.8"/>
+      <line x1="10" y1="250" x2="490" y2="250" stroke="#EDEAE0" stroke-width="0.5" stroke-dasharray="4 8"/>
+      <line x1="250" y1="10" x2="250" y2="490" stroke="#EDEAE0" stroke-width="0.5" stroke-dasharray="4 8"/>
+      <line x1="80" y1="80" x2="420" y2="420" stroke="#EDEAE0" stroke-width="0.5" stroke-dasharray="4 8"/>
+      <line x1="420" y1="80" x2="80" y2="420" stroke="#EDEAE0" stroke-width="0.5" stroke-dasharray="4 8"/>
+    </g>
+  </svg>
+
+  <!-- Ticker -->
+  <div class="ticker">
+    <div class="ticker-inner">
+      <span>PERSIAN MEELS</span><span class="dot">◆</span>
+      <span>INDIAN CLUBS</span><span class="dot">◆</span>
+      <span>CALISTHENICS</span><span class="dot">◆</span>
+      <span>MOVEMENT FREEDOM</span><span class="dot">◆</span>
+      <span>VERSATILE MOVEMENT</span><span class="dot">◆</span>
+      <span>BODYWEIGHT TRAINING</span><span class="dot">◆</span>
+      <span>EXPLORE YOUR BODY</span><span class="dot">◆</span>
+      <span>TRAIN EVERYWHERE</span><span class="dot">◆</span>
+      <!-- repeat -->
+      <span>PERSIAN MEELS</span><span class="dot">◆</span>
+      <span>INDIAN CLUBS</span><span class="dot">◆</span>
+      <span>CALISTHENICS</span><span class="dot">◆</span>
+      <span>MOVEMENT FREEDOM</span><span class="dot">◆</span>
+      <span>VERSATILE MOVEMENT</span><span class="dot">◆</span>
+      <span>BODYWEIGHT TRAINING</span><span class="dot">◆</span>
+      <span>EXPLORE YOUR BODY</span><span class="dot">◆</span>
+      <span>TRAIN EVERYWHERE</span><span class="dot">◆</span>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===================== O NAS ===================== -->
+<section id="o-nas">
+  <div class="o-nas-left">
+    <span class="section-label"><span class="section-num">01</span>O nas / Marka</span>
+    <h2 class="o-nas-title reveal">
+      MARKA<br>
+      <span class="outline">Z DUSZĄ</span>
+    </h2>
+    <div class="o-nas-body">
+      <p class="reveal reveal-delay-1">
+        Versatile Movement to pierwsza w Polsce marka, która redefiniuje podejście do treningu. Naszym celem jest inspirowanie do odkrywania możliwości własnego ciała w sposób wszechstronny.
+      </p>
+      <p class="reveal reveal-delay-2">
+        Łączymy elementy kalisteniki, tradycyjne narzędzia — Indian Clubs i Persian Meels — z filozofią ruchu. Wierzymy, że trening nie musi być ograniczony przez miejsce, czas ani zasoby.
+      </p>
+    </div>
+
+    <div class="philosophy-list">
+      <div class="philosophy-item reveal">
+        <span class="p-num">01</span>
+        <div>
+          <div class="p-title">Holistyczne podejście</div>
+          <div class="p-desc">Harmonia ciała, umysłu i ducha. Trening to nie tylko estetyka — to inwestycja w zdrowie na lata.</div>
+        </div>
+      </div>
+      <div class="philosophy-item reveal reveal-delay-1">
+        <span class="p-num">02</span>
+        <div>
+          <div class="p-title">Eksploracja i kreatywność</div>
+          <div class="p-desc">Trening jako proces odkrywania własnych możliwości. Każdy ruch to nowa podróż.</div>
+        </div>
+      </div>
+      <div class="philosophy-item reveal reveal-delay-2">
+        <span class="p-num">03</span>
+        <div>
+          <div class="p-title">Wolność ruchu</div>
+          <div class="p-desc">Brak ograniczeń miejsca, czasu i zasobów. Trenuj wszędzie — na swoich zasadach.</div>
+        </div>
+      </div>
+      <div class="philosophy-item reveal reveal-delay-3">
+        <span class="p-num">04</span>
+        <div>
+          <div class="p-title">Autentyczność i pasja</div>
+          <div class="p-desc">Inspirujemy własnym przykładem. Nie idealizujemy — pokazujemy proces, nie tylko efekt.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="o-nas-right reveal">
+    <div class="o-nas-visual">
+      <div class="o-nas-quote" id="quoteBox">
+        <div class="quote-slides-wrap">
+          <span class="quote-slide active">When we change the way we move,<br>we change the way we live.</span>
+          <span class="quote-slide">Let movement become your guide.</span>
+          <span class="quote-slide">If you give enough time,<br>you will find a way.</span>
+          <span class="quote-slide">Movement is the song of the body.</span>
+          <span class="quote-slide">Give your shoulders<br>what they deserve.</span>
+        </div>
+      </div>
+      <div class="quote-dots" id="quoteDots">
+        <div class="quote-dot active"></div>
+        <div class="quote-dot"></div>
+        <div class="quote-dot"></div>
+        <div class="quote-dot"></div>
+        <div class="quote-dot"></div>
+      </div>
+      <div class="o-nas-tags">
+        <span class="tag">Movement</span>
+        <span class="tag">Unconventional</span>
+        <span class="tag">Strength</span>
+        <span class="tag">Balance</span>
+        <span class="tag">Bodyweight</span>
+        <span class="tag">Explore</span>
+        <span class="tag">Fun</span>
+        <span class="tag">Practice</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===================== SKLEP ===================== -->
+<section id="sklep">
+  <div class="shop-header">
+    <div>
+      <span class="section-label"><span class="section-num">02</span>Produkty / Oferta</span>
+      <h2 class="reveal">SKLEP</h2>
+    </div>
+    <p class="shop-sub reveal">
+      Niszowy sprzęt treningowy,<br>odzież i programy.<br>Wszystko czego potrzebujesz<br>do treningu na swoich zasadach.
+    </p>
+  </div>
+
+  <div class="products-grid">
+    <div class="product-card featured" data-num="01">
+      <div class="product-icon">PM</div>
+      <div class="product-name">PERSIAN MEELS</div>
+      <div class="product-desc">Tradycyjne irańskie narzędzie treningowe. Buduje siłę ramion, mobilność i koordynację w sposób niedostępny w żadnym innym ćwiczeniu.</div>
+      <a href="#" class="product-tag">Odkryj →</a>
+    </div>
+    <div class="product-card" data-num="02">
+      <div class="product-icon">IC</div>
+      <div class="product-name">INDIAN CLUBS</div>
+      <div class="product-desc">Klasyczne narzędzie od pokoleń stosowane przez zapaśników i tancerzy. Perfekcyjne do rozgrzewki i rehabilitacji barków.</div>
+      <a href="#" class="product-tag">Odkryj →</a>
+    </div>
+    <div class="product-card" data-num="03">
+      <div class="product-icon">AK</div>
+      <div class="product-name">AKCESORIA</div>
+      <div class="product-desc">Uzupełnij swój trening o niszowe akcesoria. Gady, bloki do handstandu i inne unikalne narzędzia ruchu.</div>
+      <a href="#" class="product-tag">Odkryj →</a>
+    </div>
+    <div class="product-card" data-num="04">
+      <div class="product-icon">OD</div>
+      <div class="product-name">ODZIEŻ</div>
+      <div class="product-desc">Ubrania dla movers. Minimalistyczny design, maksymalna funkcjonalność. Noś swoją filozofię ruchu.</div>
+      <a href="#" class="product-tag">Odkryj →</a>
+    </div>
+    <div class="product-card" data-num="05" style="grid-column: span 2;">
+      <div class="product-icon">PT</div>
+      <div class="product-name">PROGRAMY TRENINGOWE</div>
+      <div class="product-desc">Ustrukturyzowane ścieżki treningowe — od handstandu po zaawansowane techniki kalisteniki. Prowadzone przez doświadczonych coachów Versatile Movement.</div>
+      <a href="#" class="product-tag">Odkryj →</a>
+    </div>
+  </div>
+
+  <div class="shop-cta reveal">
+    <a href="sklep.html" target="_blank" class="btn-cream">Przejdź do sklepu palczany.pl</a>
+  </div>
+</section>
+
+<!-- ===================== SPOŁECZNOŚĆ ===================== -->
+<section id="spolecznosc">
+  <div class="comm-left reveal">
+    <h2>SPO&shy;ŁECZ&shy;NOŚĆ</h2>
+  </div>
+  <div class="comm-right">
+    <span class="section-label"><span class="section-num">03</span>Community / Społeczność</span>
+    <p class="comm-text reveal">
+      Budujemy środowisko ludzi, którzy trenują świadomie — dla zdrowia, wolności ruchu i odkrywania swojego potencjału. Dołącz do rosnącej społeczności ruchu z całej Polski.
+    </p>
+    <div class="comm-values">
+      <div class="comm-value reveal">
+        <div class="comm-value-title">Wsparcie</div>
+        <div class="comm-value-desc">Dzielimy się wiedzą i inspirujemy się nawzajem. Jesteśmy silniejsi razem.</div>
+      </div>
+      <div class="comm-value reveal reveal-delay-1">
+        <div class="comm-value-title">Edukacja</div>
+        <div class="comm-value-desc">Warsztaty, wyzwania treningowe i filmy instruktażowe dostępne dla każdego.</div>
+      </div>
+      <div class="comm-value reveal reveal-delay-2">
+        <div class="comm-value-title">Autentyczność</div>
+        <div class="comm-value-desc">Pokazujemy proces, nie tylko efekty. Real movement, real progress.</div>
+      </div>
+      <div class="comm-value reveal reveal-delay-3">
+        <div class="comm-value-title">Dostępność</div>
+        <div class="comm-value-desc">Trening dla każdego, wszędzie. Bez względu na poziom zaawansowania.</div>
+      </div>
+    </div>
+    <div class="comm-stats reveal">
+      <div class="stat">
+        <span class="stat-num">18–60</span>
+        <span class="stat-label">Wiek uczestników</span>
+      </div>
+      <div class="stat">
+        <span class="stat-num">PL #1</span>
+        <span class="stat-label">Niszowy sprzęt</span>
+      </div>
+      <div class="stat">
+        <span class="stat-num">∞</span>
+        <span class="stat-label">Możliwości ruchu</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===================== ZESPÓŁ ===================== -->
+<section id="zespol">
+  <div class="team-header">
+    <span class="section-label"><span class="section-num">04</span>Ludzie / Zespół</span>
+    <h2 class="reveal">ZESPÓŁ</h2>
+  </div>
+  <div class="team-grid">
+    <div class="team-card reveal">
+      <div class="team-card-img">
+        <img src="Lapa_meels_mace_.webp" alt="Karol" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center center;">
+        <div class="team-overlay">
+          <p class="team-overlay-text">Twórca Versatile Movement. Od ponad dekady eksploruje trening i ruch jako filozofię - łącząc tradycję starożytnych narzędzi i ćwiczeń z nowoczesną biomechaniką. Dzieli się wiedzą, inspiruje i prowadzi społeczność w stronę świadomego życia.</p>
+        </div>
+      </div>
+      <span class="team-card-num">01</span>
+      <div class="team-name">KAROL</div>
+      <div class="team-role">Założyciel &amp; Coach</div>
+    </div>
+    <div class="team-card reveal reveal-delay-1">
+      <div class="team-card-img">
+        <img src="Łapciew_OAHS_2.webp" alt="Oskar" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center center;">
+        <div class="team-overlay">
+          <p class="team-overlay-text">Współtwórca Versatile Movement. Specjalizuje się w treningu z wykorzystaniem własnej masy ciała, rozwijając siłę, mobilność i kontrolę ruchu, stawiając na funkcjonalne i wszechstronne podejście do treningu. Naucza i inspiruje, wspierając rozwój społeczności.</p>
+        </div>
+      </div>
+      <span class="team-card-num">02</span>
+      <div class="team-name">OSKAR</div>
+      <div class="team-role">Współzałożyciel &amp; Coach</div>
+    </div>
+    <div class="team-card reveal reveal-delay-2">
+      <div class="team-card-img">
+        <img src="Budensflag.webp" alt="Kacper" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 20%;">
+        <div class="team-overlay">
+          <p class="team-overlay-text">Ambasador marki Versatile Movement. Reprezentuje podejście oparte na świadomym ruchu, sile funkcjonalnej i pracy z własnym ciałem. Dzieli się doświadczeniem i swoją drogą, inspiruje do treningu i pokazuje naturalne podejście do rozwoju sprawności. Pasja, spójność, autentyczność.</p>
+        </div>
+      </div>
+      <span class="team-card-num">03</span>
+      <div class="team-name">KACPER</div>
+      <div class="team-role">Współtwórca &amp; Ambasador Marki</div>
+    </div>
+  </div>
+  <div style="margin-top: 48px; text-align: center;">
+    <p style="font-family: var(--font-mono); font-size: 10px; letter-spacing: 2px; opacity: 0.35; text-transform: uppercase;">
+      Dołącz do naszej ekipy — zawsze szukamy pasjonatów ruchu
+    </p>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===================== BLOG ===================== -->
+<section id="blog">
+  <div class="blog-header">
+    <div>
+      <span class="section-label"><span class="section-num">05</span>Wiedza / Blog</span>
+      <h2 class="reveal">BLOG</h2>
+    </div>
+    <a href="blog.html" class="btn-secondary" style="align-self: flex-end;">Wszystkie wpisy</a>
+  </div>
+  <div class="blog-grid">
+    <div class="blog-card featured reveal">
+      <span class="blog-cat">Filozofia ruchu</span>
+      <h3 class="blog-title">Persian Meels — starożytna mądrość w nowoczesnym treningu</h3>
+      <p class="blog-excerpt">Skąd pochodzą Persian Meels? Jak to narzędzie, używane przez irańskich zapaśników od setek lat, może odmienić Twój trening ramion i mobilność barków? Zanurzamy się w historię i praktykę.</p>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:auto;">
+        <span class="blog-meta">15 marca 2025</span>
+        <a href="blog.html" class="blog-read-more">Czytaj dalej</a>
+      </div>
+    </div>
+    <div class="blog-card reveal reveal-delay-1">
+      <span class="blog-cat">Trening</span>
+      <h3 class="blog-title">Indian Clubs dla barków — od rehabilitacji do siły</h3>
+      <p class="blog-excerpt">Dlaczego fizjoterapeuci coraz częściej sięgają po Indian Clubs? Poznaj protokół ćwiczeń, który odbuduje Twoje barki.</p>
+      <span class="blog-meta">2 marca 2025</span>
+      <a href="blog.html" class="blog-read-more">Czytaj dalej</a>
+    </div>
+    <div class="blog-card reveal reveal-delay-2">
+      <span class="blog-cat">Filozofia</span>
+      <h3 class="blog-title">Ruch jako podróż w głąb siebie</h3>
+      <p class="blog-excerpt">Co łączy kalistenikę, tańce bojowe i medytację w ruchu? Świadoma praktyka fizyczna.</p>
+      <span class="blog-meta">18 lutego 2025</span>
+      <a href="blog.html" class="blog-read-more">Czytaj dalej</a>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== SOCIAL MEDIA ===================== -->
+<section id="social">
+  <span class="section-label">06 — Follow us</span>
+  <h2 class="reveal">SOCIAL<br>MEDIA</h2>
+  <p class="social-sub">Śledź nas i bądź częścią ruchu</p>
+  <div class="social-links reveal">
+    <a href="https://www.instagram.com/versatile.movement" target="_blank" class="social-item">
+      <span class="social-platform">IG</span>
+      <span class="social-handle">@versatile.movement</span>
+    </a>
+    <a href="https://www.facebook.com/bournemouthcalisthenics/" target="_blank" class="social-item">
+      <span class="social-platform">FB</span>
+      <span class="social-handle">VersatileMovement</span>
+    </a>
+    <a href="https://www.youtube.com/@versatilemovement993" target="_blank" class="social-item">
+      <span class="social-platform">YT</span>
+      <span class="social-handle">VersatileMovement</span>
+    </a>
+    <a href="https://www.versatilemovement.pl" target="_blank" class="social-item">
+      <span class="social-platform">WEB</span>
+      <span class="social-handle">versatilemovement.pl</span>
+    </a>
+    <a href="sklep.html" target="_blank" class="social-item">
+      <span class="social-platform">SHOP</span>
+      <span class="social-handle">palczany.pl</span>
+    </a>
+  </div>
+</section>
+
+<!-- ===================== KONTAKT ===================== -->
+<section id="kontakt">
+  <div class="contact-left">
+    <span class="section-label"><span class="section-num">07</span>Kontakt / Współpraca</span>
+    <h2 class="reveal">KONTAKT</h2>
+    <p class="contact-sub reveal">
+      Masz pytania? Chcesz nawiązać współpracę lub umówić się na warsztaty? Napisz do nas — odezwiemy się szybko.
+    </p>
+    <div class="contact-info reveal">
+      <div class="contact-info-item">
+        <span class="contact-info-label">E-mail</span>
+        <span class="contact-info-value">kontakt@versatilemovement.pl</span>
+      </div>
+      <div class="contact-info-item">
+        <span class="contact-info-label">Social</span>
+        <span class="contact-info-value">@versatile.movement</span>
+      </div>
+      <div class="contact-info-item">
+        <span class="contact-info-label">Sklep</span>
+        <span class="contact-info-value">palczany.pl</span>
+      </div>
+    </div>
+  </div>
+  <div class="contact-right reveal">
+    <form class="contact-form" onsubmit="handleSubmit(event)">
+      <div class="form-group">
+        <label class="form-label">Imię i nazwisko</label>
+        <input class="form-input" type="text" placeholder="Jan Kowalski" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Adres e-mail</label>
+        <input class="form-input" type="email" placeholder="jan@email.com" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Temat</label>
+        <input class="form-input" type="text" placeholder="Warsztaty / Współpraca / Pytanie...">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Wiadomość</label>
+        <textarea class="form-textarea" placeholder="Napisz do nas..." required></textarea>
+      </div>
+      <button type="submit" class="form-submit">Wyślij wiadomość</button>
+    </form>
+  </div>
+</section>
+
+<!-- ===================== FOOTER ===================== -->
+<footer>
+  <div class="footer-top">
+    <div class="footer-brand">
+      <span class="footer-logo">VERSATILE<br>MOVEMENT</span>
+      <p class="footer-tagline">When we change the way we move,<br>we change the way we live.<br><br>Pierwsza w Polsce marka ruchu.</p>
+    </div>
+    <div class="footer-links">
+      <div class="footer-col">
+        <h4>Nawigacja</h4>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="o-nas.html">O nas</a></li>
+          <li><a href="spolecznosc.html">Społeczność</a></li>
+          <li><a href="zespol.html">Zespół</a></li>
+          <li><a href="blog.html">Blog</a></li>
+          <li><a href="kontakt.html">Kontakt</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Sklep</h4>
+        <ul>
+          <li><a href="sklep.html#persian-meels">Persian Meels</a></li>
+          <li><a href="sklep.html#indian-clubs">Indian Clubs</a></li>
+          <li><a href="sklep.html#akcesoria">Akcesoria</a></li>
+          <li><a href="sklep.html#odziez">Odzież</a></li>
+          <li><a href="sklep.html#programy">Programy treningowe</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Social media</h4>
+        <ul>
+          <li><a href="https://www.instagram.com/versatile.movement" target="_blank">Instagram</a></li>
+          <li><a href="https://www.facebook.com/bournemouthcalisthenics/" target="_blank">Facebook</a></li>
+          <li><a href="https://www.youtube.com/@versatilemovement993" target="_blank">YouTube</a></li>
+
+          <li><a href="sklep.html" target="_blank">Sklep</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span class="footer-copy">© 2026 Versatile Movement. Wszelkie prawa zastrzeżone.</span>
+    <span class="footer-motto">MOVE. EXPLORE. LIVE.</span>
+  </div>
+</footer>
+
+<!-- ===================== SCRIPTS ===================== -->
+<script>
+  // LOADER
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      document.getElementById('loader').classList.add('done');
+    }, 2000);
+  });
+
+  // CURSOR
+  const cursor = document.getElementById('cursor');
+  const ring = document.getElementById('cursorRing');
+  let mx = 0, my = 0, rx = 0, ry = 0;
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    cursor.style.left = mx + 'px';
+    cursor.style.top = my + 'px';
+  });
+  function animRing() {
+    rx += (mx - rx) * 0.12;
+    ry += (my - ry) * 0.12;
+    ring.style.left = rx + 'px';
+    ring.style.top = ry + 'px';
+    requestAnimationFrame(animRing);
+  }
+  animRing();
+  document.querySelectorAll('a,button,.product-card,.blog-card,.team-card,.social-item,.comm-value').forEach(el => {
+    el.addEventListener('mouseenter', () => {
+      cursor.style.transform = 'translate(-50%,-50%) scale(2.5)';
+      ring.style.transform = 'translate(-50%,-50%) scale(1.4)';
+      ring.style.opacity = '0.2';
+    });
+    el.addEventListener('mouseleave', () => {
+      cursor.style.transform = 'translate(-50%,-50%) scale(1)';
+      ring.style.transform = 'translate(-50%,-50%) scale(1)';
+      ring.style.opacity = '0.5';
+    });
+  });
+
+  // NAV SCROLL
+  const navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    navbar.classList.toggle('scrolled', window.scrollY > 60);
+  });
+
+  // MOBILE MENU
+  document.getElementById('hamburger').addEventListener('click', () => {
+    document.getElementById('mobileMenu').classList.add('open');
+  });
+  document.getElementById('mobileClose').addEventListener('click', closeMobile);
+  function closeMobile() {
+    document.getElementById('mobileMenu').classList.remove('open');
+  }
+
+  // SCROLL REVEAL
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+  reveals.forEach(el => observer.observe(el));
+
+  // FORM
+  function handleSubmit(e) {
+    e.preventDefault();
+    const btn = e.target.querySelector('.form-submit');
+    btn.textContent = 'Wysłano ✓';
+    btn.style.background = 'var(--black)';
+    btn.style.color = 'var(--cream)';
+    btn.disabled = true;
+    setTimeout(() => {
+      btn.textContent = 'Wyślij wiadomość';
+      btn.disabled = false;
+      e.target.reset();
+    }, 3000);
+  }
+
+
+
+
+
+  // ROTATING QUOTES
+  (function() {
+    const slides = document.querySelectorAll('#quoteBox .quote-slides-wrap .quote-slide');
+    const dots   = document.querySelectorAll('#quoteDots .quote-dot');
+    let current  = 0;
+    let timer;
+
+    function goTo(next) {
+      slides[current].classList.remove('active');
+      dots[current].classList.remove('active');
+      current = next;
+      slides[current].classList.add('active');
+      dots[current].classList.add('active');
+    }
+
+    function advance() {
+      goTo((current + 1) % slides.length);
+    }
+
+    function resetTimer() {
+      clearInterval(timer);
+      timer = setInterval(advance, 6000);
+    }
+
+    // dots are clickable
+    dots.forEach((dot, i) => {
+      dot.addEventListener('click', () => { goTo(i); resetTimer(); });
+    });
+
+    resetTimer();
+  })();
+
+  // PARALLAX HERO
+  window.addEventListener('scroll', () => {
+    const y = window.scrollY;
+    const spiral = document.querySelector('.hero-spiral');
+    if (spiral) spiral.style.transform = `translateY(calc(-50% + ${y * 0.15}px))`;
+    // Subtle video parallax
+    const vid = document.getElementById('heroVideo');
+    if (vid && y < window.innerHeight) {
+      vid.style.transform = `scale(1.05) translateY(${y * 0.2}px)`;
+    }
+  });
+
+  // VIDEO SOUND TOGGLE
+  function toggleMute() {
+    const vid = document.getElementById('heroVideo');
+    const label = document.getElementById('videoCtrlLabel');
+    vid.muted = !vid.muted;
+    label.textContent = vid.muted ? '♪ dźwięk' : '◼ wycisz';
+  }
+</script>
+</body>
+</html>

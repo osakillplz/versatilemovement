@@ -2,6 +2,7 @@
 <html lang="pl">
 <head>
   <meta charset="UTF-8">
+  <script>document.documentElement.setAttribute('data-lang', sessionStorage.getItem('vm-lang') || 'pl');</script>
   <link rel="icon" type="image/png" href="logo-kolko-favicon.png">
   <link rel="apple-touch-icon" href="logo-kolko-favicon.png">
   <!-- Security -->
@@ -14,9 +15,32 @@
   <meta name="robots" content="noindex">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;600;700;900&family=Bebas+Neue&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;700&family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;700&family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"></noscript>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ===== I18N (PL/EN) ===== */
+    html[data-lang="pl"] .lang-en { display: none; }
+    html[data-lang="en"] .lang-pl { display: none; }
+    .lang-toggle {
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: inherit;
+    }
+    .lang-toggle .lang-sep { opacity: 0.3; }
+    .lang-toggle span[data-tag] { opacity: 0.4; transition: opacity 0.2s; }
+    .lang-toggle:hover span[data-tag] { opacity: 0.7; }
+    html[data-lang="pl"] .lang-toggle span[data-tag="pl"],
+    html[data-lang="en"] .lang-toggle span[data-tag="en"] { opacity: 1 !important; }
 
     :root {
       --cream: #EDEAE0;
@@ -312,29 +336,37 @@
 
     <div class="top-bar">
       <a href="/" class="logo">
-        <img src="VersatileMovement_logo1_png.webp" alt="Versatile Movement">
+        <img src="VersatileMovement_logo1_png-sm.webp" alt="Versatile Movement" width="640" height="422">
       </a>
-      <a href="/" class="back-link">Wróć do strony</a>
+      <div style="display: flex; align-items: center; gap: 24px;">
+        <a href="/" class="back-link"><span class="lang-pl">Wróć do strony</span><span class="lang-en">Back to homepage</span></a>
+        <button class="lang-toggle" id="langToggle" aria-label="Zmień język / Change language" type="button">
+          <span data-tag="pl">PL</span><span class="lang-sep">/</span><span data-tag="en">EN</span>
+        </button>
+      </div>
     </div>
 
-    <div class="main">
-      <span class="eyebrow">Versatile Movement — Sklep</span>
+    <main class="main">
+      <span class="eyebrow"><span class="lang-pl">Versatile Movement — Sklep</span><span class="lang-en">Versatile Movement — Shop</span></span>
       <h1 class="headline">
-        <span class="headline-line">WKRÓTCE</span>
-        <span class="headline-line">ONLINE</span>
+        <span class="headline-line lang-pl">WKRÓTCE</span>
+        <span class="headline-line lang-en">COMING</span>
+        <span class="headline-line lang-pl">ONLINE</span>
+        <span class="headline-line lang-en">SOON</span>
       </h1>
       <p class="tagline">
-        Przygotowujemy coś wyjątkowego. Sprzęt, odzież i akcesoria do treningu siłowo-kondycyjnego — wszystko w jednym miejscu.
+        <span class="lang-pl">Przygotowujemy coś wyjątkowego. Sprzęt, odzież i akcesoria do treningu siłowo-kondycyjnego — wszystko w jednym miejscu.</span>
+        <span class="lang-en">We're preparing something special. Strength and conditioning gear, apparel, and accessories — all in one place.</span>
       </p>
 
       <div class="divider"></div>
 
       <div class="bottom-row">
         <div>
-          <p class="notify-label">Powiadom mnie o otwarciu</p>
+          <p class="notify-label"><span class="lang-pl">Powiadom mnie o otwarciu</span><span class="lang-en">Notify me when it opens</span></p>
           <div class="notify-form">
-            <input class="notify-input" type="email" placeholder="twój@email.pl">
-            <button class="notify-btn">Zapisz się</button>
+            <input class="notify-input" type="email" placeholder="twój@email.pl" data-ph-pl="twój@email.pl" data-ph-en="your@email.com">
+            <button class="notify-btn"><span class="lang-pl">Zapisz się</span><span class="lang-en">Sign up</span></button>
           </div>
         </div>
 
@@ -344,9 +376,25 @@
           <a href="https://www.youtube.com/@versatilemovement993" target="_blank" rel="noopener noreferrer" class="social-link">YouTube</a>
         </div>
       </div>
-    </div>
+    </main>
 
   </div>
 
+<script>
+  function setSiteLang(lang) {
+    document.documentElement.setAttribute('data-lang', lang);
+    sessionStorage.setItem('vm-lang', lang);
+    document.querySelectorAll('[data-ph-pl]').forEach(el => {
+      el.placeholder = lang === 'en' ? el.dataset.phEn : el.dataset.phPl;
+    });
+  }
+  document.querySelectorAll('.lang-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-lang') || 'pl';
+      setSiteLang(current === 'pl' ? 'en' : 'pl');
+    });
+  });
+  setSiteLang(document.documentElement.getAttribute('data-lang') || 'pl');
+</script>
 </body>
 </html>

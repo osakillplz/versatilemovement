@@ -2,6 +2,7 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
+<script>document.documentElement.setAttribute('data-lang', sessionStorage.getItem('vm-lang') || 'pl');</script>
 <link rel="icon" type="image/png" href="logo-kolko-favicon.png">
 <link rel="apple-touch-icon" href="logo-kolko-favicon.png">
 <!-- Security -->
@@ -24,8 +25,31 @@
 <meta property="og:locale" content="pl_PL">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;600;700;900&family=Bebas+Neue&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;700&family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;700&family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"></noscript>
 <style>
+/* ===== I18N (PL/EN) ===== */
+html[data-lang="pl"] .lang-en { display: none; }
+html[data-lang="en"] .lang-pl { display: none; }
+.lang-toggle {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--cream);
+}
+.lang-toggle .lang-sep { opacity: 0.3; }
+.lang-toggle span[data-tag] { opacity: 0.4; transition: opacity 0.2s; }
+.lang-toggle:hover span[data-tag] { opacity: 0.7; }
+html[data-lang="pl"] .lang-toggle span[data-tag="pl"],
+html[data-lang="en"] .lang-toggle span[data-tag="en"] { opacity: 1 !important; }
+
 /* ===== RESET & BASE ===== */
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -58,7 +82,7 @@ body {
   z-index: 9999;
   left: -20px; top: -20px;
   transform: translate(-50%, -50%);
-  transition: transform 0.1s ease;
+  transition: transform 0.1s ease, opacity 0.25s ease;
   mix-blend-mode: difference;
 }
 .cursor-ring {
@@ -73,6 +97,10 @@ body {
   transition: transform 0.18s ease, opacity 0.18s ease;
   opacity: 0.5;
   mix-blend-mode: difference;
+}
+body:not(.cursor-active) .cursor,
+body:not(.cursor-active) .cursor-ring {
+  opacity: 0 !important;
 }
 
 /* ===== SCROLLBAR ===== */
@@ -199,6 +227,7 @@ nav:not(.scrolled) .hamburger span { background: var(--cream); }
   opacity: 0.8;
 }
 .mobile-menu a:hover { opacity: 1; }
+.mobile-lang-toggle { color: var(--cream); font-size: 13px; margin-top: 8px; }
 .mobile-close {
   position: absolute;
   top: 28px; right: 48px;
@@ -220,42 +249,24 @@ nav:not(.scrolled) .hamburger span { background: var(--cream); }
   height: 100vh;
   min-height: 640px;
   overflow: hidden;
-  display: flex;
-  align-items: flex-end;
   background: var(--black);
-}
-.hero-bg {
-  position: absolute;
-  inset: 0;
-  background-image: url('OAHS_art.webp');
-  background-size: cover;
-  background-position: center 30%;
-  filter: contrast(1.06) saturate(0.85);
-}
-.hero-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    to bottom,
-    rgba(10,10,10,0.25) 0%,
-    rgba(10,10,10,0.15) 35%,
-    rgba(10,10,10,0.6) 70%,
-    rgba(10,10,10,0.93) 100%
-  );
 }
 .hero-grain {
   position: absolute;
   inset: 0;
+  z-index: 6;
   opacity: 0.04;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
   background-size: 200px 200px;
   pointer-events: none;
 }
-.hero-content {
-  position: relative;
-  z-index: 2;
+.hero-brand {
+  position: absolute;
+  z-index: 5;
+  left: 0;
+  bottom: 0;
+  width: 55%;
   padding: 0 48px 72px;
-  width: 100%;
 }
 .hero-eyebrow {
   font-family: var(--font-mono);
@@ -350,23 +361,20 @@ nav:not(.scrolled) .hamburger span { background: var(--cream); }
 .ticker-inner .dot { opacity: 0.2; }
 @keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 
-/* ===== FEATURED ===== */
-.featured-section {
-  background: var(--black);
-  position: relative;
-  overflow: hidden;
-}
-
+/* ===== FEATURED (teraz wewnątrz .blog-hero) ===== */
 /* CSS grid stacking — all slides occupy same cell, only active is visible */
 .featured-slider {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
   display: grid;
-  position: relative;
+  grid-template-rows: 100%;
 }
 .featured-slide {
   grid-area: 1 / 1;
   display: grid;
   grid-template-columns: 55% 45%;
-  min-height: 620px;
+  height: 100%;
   opacity: 0;
   transition: opacity 0.9s ease;
   pointer-events: none;
@@ -377,13 +385,27 @@ nav:not(.scrolled) .hamburger span { background: var(--cream); }
 }
 
 .photo-slot {
+  position: relative;
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
   background: #141414;
   align-self: stretch;
-  max-height: 620px;
+  height: 100%;
+}
+.photo-slot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(10,10,10,0.05) 0%,
+    rgba(10,10,10,0.1) 40%,
+    rgba(10,10,10,0.65) 75%,
+    rgba(10,10,10,0.92) 100%
+  );
+  pointer-events: none;
 }
 .photo-slot img {
   width: 100%;
@@ -395,10 +417,12 @@ nav:not(.scrolled) .hamburger span { background: var(--cream); }
 }
 
 .featured-content {
+  position: relative;
+  height: 100%;
   padding: 48px;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
+  justify-content: center;
   gap: 16px;
 }
 .feat-category {
@@ -425,10 +449,13 @@ nav:not(.scrolled) .hamburger span { background: var(--cream); }
   max-width: 380px;
 }
 .feat-meta {
+  position: absolute;
+  right: 48px;
+  bottom: 48px;
+  left: 48px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 8px;
   gap: 16px;
 }
 .feat-date {
@@ -459,30 +486,30 @@ nav:not(.scrolled) .hamburger span { background: var(--cream); }
 .feat-btn:active { opacity: 0.8; }
 .feat-btn:focus-visible { outline: 1px solid rgba(237,234,224,0.5); outline-offset: 3px; }
 
-/* Slider dots — same grid cell, pinned to bottom-left */
+/* Slider dots — same grid cell, pinned to bottom-right (przy panelu artykułu, BLOG ma lewy dół) */
 .slide-dots {
   grid-area: 1 / 1;
   align-self: end;
-  justify-self: start;
+  justify-self: end;
   display: flex;
   gap: 8px;
   padding: 0 48px 36px;
   z-index: 10;
   pointer-events: none;
 }
-.dot {
+.slide-dot {
   width: 24px; height: 2px;
   background: rgba(237,234,224,0.2);
   cursor: none;
   pointer-events: auto;
   transition: background 0.3s, width 0.3s;
 }
-.dot.active {
+.slide-dot.active {
   background: var(--cream);
   width: 40px;
 }
-.dot:hover { background: rgba(237,234,224,0.5); }
-.dot:focus-visible { outline: 1px solid var(--cream); outline-offset: 2px; }
+.slide-dot:hover { background: rgba(237,234,224,0.5); }
+.slide-dot:focus-visible { outline: 1px solid var(--cream); outline-offset: 2px; }
 
 /* ===== POST LIST ===== */
 .posts-section {
@@ -750,7 +777,7 @@ footer {
   gap: 64px;
   flex-wrap: wrap;
 }
-.footer-col h4 {
+.footer-col h3 {
   font-family: var(--font-mono);
   font-size: 9px;
   letter-spacing: 3px;
@@ -823,15 +850,23 @@ footer {
   .nav-links { display: none; }
   .hamburger { display: flex; }
 
-  .hero-content { padding: 0 24px 56px; }
+  .blog-hero { height: auto; min-height: 0; }
+  .hero-brand {
+    position: relative;
+    width: 100%;
+    background: var(--black);
+    padding: 64px 24px 32px;
+  }
+  .featured-slider { position: relative; inset: auto; z-index: auto; grid-template-rows: none; }
 
   .featured-slide {
     grid-template-columns: 1fr;
     grid-template-rows: auto auto;
+    height: auto;
   }
-  .photo-slot { aspect-ratio: 16 / 9; }
-  .featured-content { padding: 36px 24px 56px; }
-  .feat-meta { flex-wrap: wrap; gap: 12px; }
+  .photo-slot { height: auto; aspect-ratio: 16 / 9; }
+  .featured-content { height: auto; padding: 36px 24px 56px; justify-content: flex-start; }
+  .feat-meta { position: static; left: auto; right: auto; bottom: auto; margin-top: 16px; flex-wrap: wrap; gap: 12px; }
 
   .slide-dots { padding: 0 24px 24px; }
 
@@ -871,16 +906,21 @@ footer {
 <!-- NAV -->
 <nav id="navbar">
   <a href="/" class="nav-logo">
-    <img src="VersatileMovement_logo1_png.webp" alt="Versatile Movement" class="nav-logo-img">
+    <img src="VersatileMovement_logo1_png-sm.webp" alt="Versatile Movement" class="nav-logo-img" width="640" height="422">
   </a>
   <ul class="nav-links">
     <li><a href="/">Home</a></li>
-    <li><a href="o-nas.html">O nas</a></li>
-    <li><a href="spolecznosc.html">Społeczność</a></li>
-    <li><a href="zespol.html">Zespół</a></li>
+    <li><a href="o-nas.html"><span class="lang-pl">O nas</span><span class="lang-en">About Us</span></a></li>
+    <li><a href="spolecznosc.html"><span class="lang-pl">Społeczność</span><span class="lang-en">Community</span></a></li>
+    <li><a href="zespol.html"><span class="lang-pl">Zespół</span><span class="lang-en">Team</span></a></li>
     <li><a href="blog.html" class="active">Blog</a></li>
-    <li><a href="kontakt.html">Kontakt</a></li>
-    <li class="nav-shop"><a href="sklep.html">Sklep</a></li>
+    <li><a href="kontakt.html"><span class="lang-pl">Kontakt</span><span class="lang-en">Contact</span></a></li>
+    <li class="nav-shop"><a href="sklep.html"><span class="lang-pl">Sklep</span><span class="lang-en">Shop</span></a></li>
+    <li>
+      <button class="lang-toggle" id="langToggle" aria-label="Zmień język / Change language" type="button">
+        <span data-tag="pl">PL</span><span class="lang-sep">/</span><span data-tag="en">EN</span>
+      </button>
+    </li>
   </ul>
   <button class="hamburger" id="hamburger" aria-label="Menu">
     <span></span><span></span><span></span>
@@ -889,63 +929,41 @@ footer {
 
 <!-- MOBILE MENU -->
 <div class="mobile-menu" id="mobileMenu">
-  <button class="mobile-close" id="mobileClose">ZAMKNIJ ✕</button>
+  <button class="mobile-close" id="mobileClose"><span class="lang-pl">ZAMKNIJ ✕</span><span class="lang-en">CLOSE ✕</span></button>
   <a href="/"      onclick="closeMobile()">HOME</a>
-  <a href="o-nas.html"      onclick="closeMobile()">O NAS</a>
-  <a href="spolecznosc.html" onclick="closeMobile()">SPOŁECZNOŚĆ</a>
-  <a href="zespol.html"     onclick="closeMobile()">ZESPÓŁ</a>
+  <a href="o-nas.html"      onclick="closeMobile()"><span class="lang-pl">O NAS</span><span class="lang-en">ABOUT US</span></a>
+  <a href="spolecznosc.html" onclick="closeMobile()"><span class="lang-pl">SPOŁECZNOŚĆ</span><span class="lang-en">COMMUNITY</span></a>
+  <a href="zespol.html"     onclick="closeMobile()"><span class="lang-pl">ZESPÓŁ</span><span class="lang-en">TEAM</span></a>
   <a href="blog.html"       onclick="closeMobile()">BLOG</a>
-  <a href="kontakt.html"    onclick="closeMobile()">KONTAKT</a>
-  <a href="sklep.html"      onclick="closeMobile()">SKLEP</a>
+  <a href="kontakt.html"    onclick="closeMobile()"><span class="lang-pl">KONTAKT</span><span class="lang-en">CONTACT</span></a>
+  <a href="sklep.html"      onclick="closeMobile()"><span class="lang-pl">SKLEP</span><span class="lang-en">SHOP</span></a>
+  <button class="lang-toggle mobile-lang-toggle" id="langToggleMobile" aria-label="Zmień język / Change language" type="button">
+    <span data-tag="pl">PL</span><span class="lang-sep">/</span><span data-tag="en">EN</span>
+  </button>
 </div>
 
-<!-- ==================== HERO ==================== -->
+<main>
+<!-- ==================== HERO (Hero + wyróżniony artykuł, połączone) ==================== -->
 <section class="blog-hero">
-  <div class="hero-bg"></div>
-  <div class="hero-overlay"></div>
   <div class="hero-grain"></div>
-  <div class="hero-content">
-    <span class="hero-eyebrow">Versatile Movement — Wiedza &amp; Inspiracje</span>
+
+  <div class="hero-brand">
+    <span class="hero-eyebrow"><span class="lang-pl">Versatile Movement — Wiedza &amp; Inspiracje</span><span class="lang-en">Versatile Movement — Knowledge &amp; Inspiration</span></span>
     <h1 class="hero-title">
       <span>B</span><span class="t-outline">LO</span><span>G</span>
     </h1>
     <div class="hero-sub-row">
       <p class="hero-tagline">
-        WIEDZA, KTÓRA PORUSZA.<br>
-        INSPIRACJE, KTÓRE ZOSTAJĄ.
+        <span class="lang-pl">WIEDZA, KTÓRA PORUSZA.<br>INSPIRACJE, KTÓRE ZOSTAJĄ.</span>
+        <span class="lang-en">KNOWLEDGE THAT MOVES YOU.<br>INSPIRATION THAT STAYS.</span>
       </p>
       <div class="hero-scroll-hint">
         <div class="hero-scroll-line"></div>
-        Przewiń w dół
+        <span class="lang-pl">Przewiń w dół</span><span class="lang-en">Scroll down</span>
       </div>
     </div>
   </div>
-</section>
 
-<!-- TICKER -->
-<div class="ticker">
-  <div class="ticker-inner">
-    <span>VERSATILE MOVEMENT</span><span class="dot">◆</span>
-    <span>BLOG</span><span class="dot">◆</span>
-    <span>PERSIAN MEELS</span><span class="dot">◆</span>
-    <span>INDIAN CLUBS</span><span class="dot">◆</span>
-    <span>FILOZOFIA RUCHU</span><span class="dot">◆</span>
-    <span>GADA</span><span class="dot">◆</span>
-    <span>WIEDZA &amp; INSPIRACJE</span><span class="dot">◆</span>
-    <span>KALISTENIKA</span><span class="dot">◆</span>
-    <span>VERSATILE MOVEMENT</span><span class="dot">◆</span>
-    <span>BLOG</span><span class="dot">◆</span>
-    <span>PERSIAN MEELS</span><span class="dot">◆</span>
-    <span>INDIAN CLUBS</span><span class="dot">◆</span>
-    <span>FILOZOFIA RUCHU</span><span class="dot">◆</span>
-    <span>GADA</span><span class="dot">◆</span>
-    <span>WIEDZA &amp; INSPIRACJE</span><span class="dot">◆</span>
-    <span>KALISTENIKA</span><span class="dot">◆</span>
-  </div>
-</div>
-
-<!-- ==================== FEATURED ==================== -->
-<section class="featured-section" aria-label="Wyróżniony artykuł">
   <div class="featured-slider" id="featuredSlider">
 
     <!-- SLIDE 1 — Indian Clubs -->
@@ -954,12 +972,12 @@ footer {
         <img src="Clubs.webp" alt="Indian Clubs — trening z maczugami indiańskimi">
       </div>
       <div class="featured-content">
-        <span class="feat-category">Trening / Sprzęt</span>
-        <h2 class="feat-title">Indian Clubs dla barków — od rehabilitacji do siły</h2>
-        <p class="feat-desc">Maczugami indiańskimi trenowali żołnierze, wrestlerzy i cyrkowi atleci. Poznaj ich historię i dowiedz się, jak włączyć je do swojej codziennej praktyki.</p>
+        <span class="feat-category"><span class="lang-pl">Trening / Sprzęt</span><span class="lang-en">Training / Gear</span></span>
+        <h2 class="feat-title"><span class="lang-pl">Indian Clubs dla barków — od rehabilitacji do siły</span><span class="lang-en">Indian Clubs for shoulders — from rehab to strength</span></h2>
+        <p class="feat-desc"><span class="lang-pl">Maczugami indiańskimi trenowali żołnierze, wrestlerzy i cyrkowi atleci. Poznaj ich historię i dowiedz się, jak włączyć je do swojej codziennej praktyki.</span><span class="lang-en">Indian Clubs were used by soldiers, wrestlers, and circus athletes. Discover their history and learn how to add them to your daily practice.</span></p>
         <div class="feat-meta">
 
-          <a href="#" class="feat-btn" style="margin-left:auto;">Czytaj →</a>
+          <a href="blog-indian-clubs.html" class="feat-btn" style="margin-left:auto;"><span class="lang-pl">Czytaj więcej →</span><span class="lang-en">Read more →</span></a>
         </div>
       </div>
     </div>
@@ -970,12 +988,12 @@ footer {
         <img src="Mace Lapa.webp" alt="Gada — maczuga wojowników" loading="lazy" style="object-position: center 30%;">
       </div>
       <div class="featured-content">
-        <span class="feat-category">Historia / Trening</span>
-        <h2 class="feat-title">Gada — narzędzie wojowników, które wraca do łask</h2>
-        <p class="feat-desc">Gada towarzyszyła hinduskim zapaśnikom przez wieki. Dziś powraca jako jedno z najskuteczniejszych narzędzi do budowania siły rotacyjnej i stabilności.</p>
+        <span class="feat-category"><span class="lang-pl">Historia / Trening</span><span class="lang-en">History / Training</span></span>
+        <h2 class="feat-title"><span class="lang-pl">Gada — narzędzie wojowników, które wraca do łask</span><span class="lang-en">The Gada — a warrior's tool making a comeback</span></h2>
+        <p class="feat-desc"><span class="lang-pl">Gada towarzyszyła hinduskim zapaśnikom przez wieki. Dziś powraca jako jedno z najskuteczniejszych narzędzi do budowania siły rotacyjnej i stabilności.</span><span class="lang-en">The Gada has accompanied Indian wrestlers for centuries. Today it's making a comeback as one of the most effective tools for building rotational strength and stability.</span></p>
         <div class="feat-meta">
 
-          <a href="#" class="feat-btn" style="margin-left:auto;">Czytaj →</a>
+          <a href="#" class="feat-btn" style="margin-left:auto;"><span class="lang-pl">Czytaj więcej →</span><span class="lang-en">Read more →</span></a>
         </div>
       </div>
     </div>
@@ -986,110 +1004,132 @@ footer {
         <img src="Ruch2.webp" alt="Ruch jako filozofia" loading="lazy" style="object-position: center center;">
       </div>
       <div class="featured-content">
-        <span class="feat-category">Filozofia</span>
-        <h2 class="feat-title">Ruch jako podróż w głąb siebie</h2>
-        <p class="feat-desc">Trening to nie tylko ciało. To przestrzeń do budowania uważności, rozpoznawania granic i przekształcania relacji z samym sobą.</p>
+        <span class="feat-category"><span class="lang-pl">Filozofia</span><span class="lang-en">Philosophy</span></span>
+        <h2 class="feat-title"><span class="lang-pl">Ruch jako podróż w głąb siebie</span><span class="lang-en">Movement as a journey within</span></h2>
+        <p class="feat-desc"><span class="lang-pl">Trening to nie tylko ciało. To przestrzeń do budowania uważności, rozpoznawania granic i przekształcania relacji z samym sobą.</span><span class="lang-en">Training isn't just about the body. It's a space for building awareness, recognizing limits, and transforming your relationship with yourself.</span></p>
         <div class="feat-meta">
 
-          <a href="#" class="feat-btn" style="margin-left:auto;">Czytaj →</a>
+          <a href="blog-ruch-podroz.html" class="feat-btn" style="margin-left:auto;"><span class="lang-pl">Czytaj więcej →</span><span class="lang-en">Read more →</span></a>
         </div>
       </div>
     </div>
 
     <!-- Progress dots -->
     <div class="slide-dots" role="tablist" aria-label="Nawigacja slajdów">
-      <div class="dot active" role="tab" aria-selected="true"  onclick="goToSlide(0)" tabindex="0"></div>
-      <div class="dot"        role="tab" aria-selected="false" onclick="goToSlide(1)" tabindex="0"></div>
-      <div class="dot"        role="tab" aria-selected="false" onclick="goToSlide(2)" tabindex="0"></div>
+      <div class="slide-dot active" role="tab" aria-selected="true"  onclick="goToSlide(0)" tabindex="0"></div>
+      <div class="slide-dot"        role="tab" aria-selected="false" onclick="goToSlide(1)" tabindex="0"></div>
+      <div class="slide-dot"        role="tab" aria-selected="false" onclick="goToSlide(2)" tabindex="0"></div>
     </div>
 
   </div>
 </section>
 
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-inner">
+    <span>VERSATILE MOVEMENT</span><span class="dot">◆</span>
+    <span>BLOG</span><span class="dot">◆</span>
+    <span>PERSIAN MEELS</span><span class="dot">◆</span>
+    <span>INDIAN CLUBS</span><span class="dot">◆</span>
+    <span class="lang-pl">FILOZOFIA RUCHU</span><span class="lang-en">MOVEMENT PHILOSOPHY</span><span class="dot">◆</span>
+    <span>GADA</span><span class="dot">◆</span>
+    <span class="lang-pl">WIEDZA &amp; INSPIRACJE</span><span class="lang-en">KNOWLEDGE &amp; INSPIRATION</span><span class="dot">◆</span>
+    <span class="lang-pl">KALISTENIKA</span><span class="lang-en">CALISTHENICS</span><span class="dot">◆</span>
+    <span>VERSATILE MOVEMENT</span><span class="dot">◆</span>
+    <span>BLOG</span><span class="dot">◆</span>
+    <span>PERSIAN MEELS</span><span class="dot">◆</span>
+    <span>INDIAN CLUBS</span><span class="dot">◆</span>
+    <span class="lang-pl">FILOZOFIA RUCHU</span><span class="lang-en">MOVEMENT PHILOSOPHY</span><span class="dot">◆</span>
+    <span>GADA</span><span class="dot">◆</span>
+    <span class="lang-pl">WIEDZA &amp; INSPIRACJE</span><span class="lang-en">KNOWLEDGE &amp; INSPIRATION</span><span class="dot">◆</span>
+    <span class="lang-pl">KALISTENIKA</span><span class="lang-en">CALISTHENICS</span><span class="dot">◆</span>
+  </div>
+</div>
+
 <!-- ==================== POST LIST ==================== -->
 <section class="posts-section" aria-label="Lista wpisów">
   <div class="posts-header reveal">
-    <h2>Wszystkie wpisy</h2>
-    <span>10 artykułów</span>
+    <h2><span class="lang-pl">Wszystkie wpisy</span><span class="lang-en">All posts</span></h2>
+    <span><span class="lang-pl">10 artykułów</span><span class="lang-en">10 articles</span></span>
   </div>
 
   <a href="#" class="post-row reveal" style="transition-delay: 0.04s" tabindex="0">
     <span class="post-num">01</span>
-    <span class="post-cat">Trening</span>
-    <span class="post-title">Indian Clubs dla barków — od rehabilitacji do siły</span>
+    <span class="post-cat"><span class="lang-pl">Trening</span><span class="lang-en">Training</span></span>
+    <span class="post-title"><span class="lang-pl">Indian Clubs dla barków — od rehabilitacji do siły</span><span class="lang-en">Indian Clubs for shoulders — from rehab to strength</span></span>
     <span class="post-date">Mar 2025</span>
     <span class="post-arrow">→</span>
   </a>
 
   <a href="#" class="post-row reveal" style="transition-delay: 0.08s" tabindex="0">
     <span class="post-num">02</span>
-    <span class="post-cat">Filozofia</span>
-    <span class="post-title">Ruch jako podróż w głąb siebie</span>
-    <span class="post-date">Lut 2025</span>
+    <span class="post-cat"><span class="lang-pl">Filozofia</span><span class="lang-en">Philosophy</span></span>
+    <span class="post-title"><span class="lang-pl">Ruch jako podróż w głąb siebie</span><span class="lang-en">Movement as a journey within</span></span>
+    <span class="post-date"><span class="lang-pl">Lut 2025</span><span class="lang-en">Feb 2025</span></span>
     <span class="post-arrow">→</span>
   </a>
 
   <a href="#" class="post-row reveal" style="transition-delay: 0.12s" tabindex="0">
     <span class="post-num">03</span>
-    <span class="post-cat">Historia</span>
-    <span class="post-title">Gada — broń wojowników jako narzędzie treningu</span>
-    <span class="post-date">Sty 2025</span>
+    <span class="post-cat"><span class="lang-pl">Historia</span><span class="lang-en">History</span></span>
+    <span class="post-title"><span class="lang-pl">Gada — broń wojowników jako narzędzie treningu</span><span class="lang-en">The Gada — a warrior's weapon as a training tool</span></span>
+    <span class="post-date"><span class="lang-pl">Sty 2025</span><span class="lang-en">Jan 2025</span></span>
     <span class="post-arrow">→</span>
   </a>
 
   <a href="#" class="post-row reveal" style="transition-delay: 0.16s" tabindex="0">
     <span class="post-num">04</span>
-    <span class="post-cat">Trening</span>
-    <span class="post-title">Handstand od zera — jak zacząć?</span>
-    <span class="post-date">Sty 2025</span>
+    <span class="post-cat"><span class="lang-pl">Trening</span><span class="lang-en">Training</span></span>
+    <span class="post-title"><span class="lang-pl">Handstand od zera — jak zacząć?</span><span class="lang-en">Handstand from scratch — how to start?</span></span>
+    <span class="post-date"><span class="lang-pl">Sty 2025</span><span class="lang-en">Jan 2025</span></span>
     <span class="post-arrow">→</span>
   </a>
 
   <a href="#" class="post-row reveal" style="transition-delay: 0.2s" tabindex="0">
     <span class="post-num">05</span>
-    <span class="post-cat">Sprzęt</span>
-    <span class="post-title">Jak wybrać pierwsze Persian Meels</span>
-    <span class="post-date">Gru 2024</span>
+    <span class="post-cat"><span class="lang-pl">Sprzęt</span><span class="lang-en">Gear</span></span>
+    <span class="post-title"><span class="lang-pl">Jak wybrać pierwsze Persian Meels</span><span class="lang-en">How to choose your first Persian Meels</span></span>
+    <span class="post-date"><span class="lang-pl">Gru 2024</span><span class="lang-en">Dec 2024</span></span>
     <span class="post-arrow">→</span>
   </a>
 
   <a href="#" class="post-row reveal" style="transition-delay: 0.24s" tabindex="0">
     <span class="post-num">06</span>
-    <span class="post-cat">Oddech</span>
-    <span class="post-title">Pranayama w sali treningowej — oddech jako narzędzie siły</span>
-    <span class="post-date">Lis 2024</span>
+    <span class="post-cat"><span class="lang-pl">Oddech</span><span class="lang-en">Breath</span></span>
+    <span class="post-title"><span class="lang-pl">Pranayama w sali treningowej — oddech jako narzędzie siły</span><span class="lang-en">Pranayama in the gym — breath as a tool for strength</span></span>
+    <span class="post-date"><span class="lang-pl">Lis 2024</span><span class="lang-en">Nov 2024</span></span>
     <span class="post-arrow">→</span>
   </a>
 
   <a href="#" class="post-row reveal" style="transition-delay: 0.28s" tabindex="0">
     <span class="post-num">07</span>
-    <span class="post-cat">Ciało</span>
-    <span class="post-title">Mobilność bioder — fundament każdego ruchu</span>
-    <span class="post-date">Paź 2024</span>
+    <span class="post-cat"><span class="lang-pl">Ciało</span><span class="lang-en">Body</span></span>
+    <span class="post-title"><span class="lang-pl">Mobilność bioder — fundament każdego ruchu</span><span class="lang-en">Hip mobility — the foundation of every movement</span></span>
+    <span class="post-date"><span class="lang-pl">Paź 2024</span><span class="lang-en">Oct 2024</span></span>
     <span class="post-arrow">→</span>
   </a>
 
   <a href="#" class="post-row reveal" style="transition-delay: 0.32s" tabindex="0">
     <span class="post-num">08</span>
-    <span class="post-cat">Filozofia</span>
-    <span class="post-title">Rytm i powtórzenie — medytacyjny wymiar ćwiczeń z maczugą</span>
-    <span class="post-date">Wrz 2024</span>
+    <span class="post-cat"><span class="lang-pl">Filozofia</span><span class="lang-en">Philosophy</span></span>
+    <span class="post-title"><span class="lang-pl">Rytm i powtórzenie — medytacyjny wymiar ćwiczeń z maczugą</span><span class="lang-en">Rhythm and repetition — the meditative dimension of mace training</span></span>
+    <span class="post-date"><span class="lang-pl">Wrz 2024</span><span class="lang-en">Sep 2024</span></span>
     <span class="post-arrow">→</span>
   </a>
 
   <a href="#" class="post-row reveal" style="transition-delay: 0.36s" tabindex="0">
     <span class="post-num">09</span>
-    <span class="post-cat">Kalistenika</span>
-    <span class="post-title">Ciężar ciała jako mistrz — dlaczego mniej znaczy więcej</span>
-    <span class="post-date">Sie 2024</span>
+    <span class="post-cat"><span class="lang-pl">Kalistenika</span><span class="lang-en">Calisthenics</span></span>
+    <span class="post-title"><span class="lang-pl">Ciężar ciała jako mistrz — dlaczego mniej znaczy więcej</span><span class="lang-en">Bodyweight as the master — why less is more</span></span>
+    <span class="post-date"><span class="lang-pl">Sie 2024</span><span class="lang-en">Aug 2024</span></span>
     <span class="post-arrow">→</span>
   </a>
 
   <a href="#" class="post-row reveal" style="transition-delay: 0.4s" tabindex="0">
     <span class="post-num">10</span>
-    <span class="post-cat">Rytuał</span>
-    <span class="post-title">Poranny ruch — jak 20 minut zmienia resztę dnia</span>
-    <span class="post-date">Lip 2024</span>
+    <span class="post-cat"><span class="lang-pl">Rytuał</span><span class="lang-en">Ritual</span></span>
+    <span class="post-title"><span class="lang-pl">Poranny ruch — jak 20 minut zmienia resztę dnia</span><span class="lang-en">Morning movement — how 20 minutes changes the rest of your day</span></span>
+    <span class="post-date"><span class="lang-pl">Lip 2024</span><span class="lang-en">Jul 2024</span></span>
     <span class="post-arrow">→</span>
   </a>
 
@@ -1098,7 +1138,7 @@ footer {
 <!-- ==================== NEWSLETTER ==================== -->
 <section class="newsletter-section" aria-label="Newsletter">
 
-  <span class="nl-section-label reveal">— Bądź na bieżąco</span>
+  <span class="nl-section-label reveal"><span class="lang-pl">— Bądź na bieżąco</span><span class="lang-en">— Stay in the loop</span></span>
 
   <h2 class="nl-heading reveal reveal-delay-1">
     NEWS<span class="t-outline">LETTER</span>
@@ -1106,77 +1146,120 @@ footer {
 
   <div class="nl-form-wrap reveal reveal-delay-2">
     <form class="nl-fields" onsubmit="handleNL(event)" novalidate>
-      <input type="text"  class="nl-input" placeholder="Imię"     autocomplete="given-name"  required>
-      <input type="text"  class="nl-input" placeholder="Nazwisko" autocomplete="family-name">
-      <input type="email" class="nl-input" placeholder="E-mail"   autocomplete="email"       required>
+      <input type="text"  class="nl-input" placeholder="Imię"     data-ph-pl="Imię"     data-ph-en="First name" autocomplete="given-name"  required>
+      <input type="text"  class="nl-input" placeholder="Nazwisko" data-ph-pl="Nazwisko" data-ph-en="Last name"  autocomplete="family-name">
+      <input type="email" class="nl-input" placeholder="E-mail"   data-ph-pl="E-mail"   data-ph-en="Email"      autocomplete="email"       required>
       <button type="submit" class="nl-submit" id="nlBtn">
-        <span id="nlBtnText">Zapisz się</span>
+        <span id="nlBtnText"><span class="lang-pl">Zapisz się</span><span class="lang-en">Sign up</span></span>
       </button>
     </form>
-    <p class="nl-disclaimer">Zapisując się, wyrażasz zgodę na otrzymywanie wiadomości e-mail od Versatile Movement. Możesz zrezygnować w każdej chwili.</p>
+    <p class="nl-disclaimer">
+      <span class="lang-pl">Zapisując się, wyrażasz zgodę na otrzymywanie wiadomości e-mail od Versatile Movement. Możesz zrezygnować w każdej chwili.</span>
+      <span class="lang-en">By signing up, you agree to receive emails from Versatile Movement. You can unsubscribe at any time.</span>
+    </p>
   </div>
 
 </section>
+</main>
 
 <!-- ==================== FOOTER ==================== -->
 <footer>
   <div class="footer-top">
     <div class="footer-brand">
       <span class="footer-logo">VERSATILE<br>MOVEMENT</span>
-      <p class="footer-tagline">When we change the way we move,<br>we change the way we live.<br><br>Pierwsza w Polsce marka ruchu.</p>
+      <p class="footer-tagline">When we change the way we move,<br>we change the way we live.<br><br><span class="lang-pl">Pierwsza w Polsce marka ruchu.</span><span class="lang-en">Poland's first movement brand.</span></p>
     </div>
     <div class="footer-links">
       <div class="footer-col">
-        <h4>Nawigacja</h4>
+        <h3><span class="lang-pl">Nawigacja</span><span class="lang-en">Navigation</span></h3>
         <ul>
           <li><a href="/">Home</a></li>
-          <li><a href="o-nas.html">O nas</a></li>
-          <li><a href="spolecznosc.html">Społeczność</a></li>
-          <li><a href="zespol.html">Zespół</a></li>
+          <li><a href="o-nas.html"><span class="lang-pl">O nas</span><span class="lang-en">About Us</span></a></li>
+          <li><a href="spolecznosc.html"><span class="lang-pl">Społeczność</span><span class="lang-en">Community</span></a></li>
+          <li><a href="zespol.html"><span class="lang-pl">Zespół</span><span class="lang-en">Team</span></a></li>
           <li><a href="blog.html">Blog</a></li>
-          <li><a href="kontakt.html">Kontakt</a></li>
+          <li><a href="kontakt.html"><span class="lang-pl">Kontakt</span><span class="lang-en">Contact</span></a></li>
         </ul>
       </div>
       <div class="footer-col">
-        <h4>Sklep</h4>
+        <h3><span class="lang-pl">Sklep</span><span class="lang-en">Shop</span></h3>
         <ul>
           <li><a href="sklep.html#persian-meels">Persian Meels</a></li>
           <li><a href="sklep.html#indian-clubs">Indian Clubs</a></li>
-          <li><a href="sklep.html#akcesoria">Akcesoria</a></li>
-          <li><a href="sklep.html#odziez">Odzież</a></li>
-          <li><a href="sklep.html#programy">Programy treningowe</a></li>
+          <li><a href="sklep.html#akcesoria"><span class="lang-pl">Akcesoria</span><span class="lang-en">Accessories</span></a></li>
+          <li><a href="sklep.html#odziez"><span class="lang-pl">Odzież</span><span class="lang-en">Apparel</span></a></li>
+          <li><a href="sklep.html#programy"><span class="lang-pl">Programy treningowe</span><span class="lang-en">Training Programs</span></a></li>
         </ul>
       </div>
       <div class="footer-col">
-        <h4>Social media</h4>
+        <h3>Social media</h3>
         <ul>
           <li><a href="https://www.instagram.com/versatile.movement" target="_blank" rel="noopener noreferrer">Instagram</a></li>
           <li><a href="https://www.facebook.com/bournemouthcalisthenics/"   target="_blank" rel="noopener noreferrer">Facebook</a></li>
           <li><a href="https://www.youtube.com/@versatilemovement993"   target="_blank" rel="noopener noreferrer">YouTube</a></li>
 
-          <li><a href="sklep.html"                                   target="_blank" rel="noopener noreferrer">Sklep</a></li>
+          <li><a href="sklep.html"                                   target="_blank" rel="noopener noreferrer"><span class="lang-pl">Sklep</span><span class="lang-en">Shop</span></a></li>
         </ul>
       </div>
     </div>
   </div>
   <div class="footer-bottom">
-    <span class="footer-copy">© 2026 Versatile Movement. Wszelkie prawa zastrzeżone.</span>
+    <span class="footer-copy">© 2026 Versatile Movement. <span class="lang-pl">Wszelkie prawa zastrzeżone.</span><span class="lang-en">All rights reserved.</span></span>
     <span class="footer-motto">MOVE. EXPLORE. LIVE.</span>
   </div>
 </footer>
 
 <!-- ==================== SCRIPTS ==================== -->
 <script>
+  // LANGUAGE TOGGLE
+  function setSiteLang(lang) {
+    document.documentElement.setAttribute('data-lang', lang);
+    sessionStorage.setItem('vm-lang', lang);
+    document.querySelectorAll('[data-ph-pl]').forEach(el => {
+      el.placeholder = lang === 'en' ? el.dataset.phEn : el.dataset.phPl;
+    });
+  }
+  document.querySelectorAll('.lang-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-lang') || 'pl';
+      setSiteLang(current === 'pl' ? 'en' : 'pl');
+    });
+  });
+  setSiteLang(document.documentElement.getAttribute('data-lang') || 'pl');
+
   /* ------ CURSOR ------ */
   const cursor = document.getElementById('cursor');
   const ring   = document.getElementById('cursorRing');
   let mx = 0, my = 0, rx = 0, ry = 0;
+  let usingTouch = false;
+  function showCursor() { document.body.classList.add('cursor-active'); }
+  function hideCursor() { document.body.classList.remove('cursor-active'); }
 
   document.addEventListener('mousemove', e => {
+    usingTouch = false;
     mx = e.clientX; my = e.clientY;
     cursor.style.left = mx + 'px';
     cursor.style.top  = my + 'px';
+    showCursor();
   });
+  document.addEventListener('mouseleave', () => { if (!usingTouch) hideCursor(); });
+  document.addEventListener('touchstart', e => {
+    usingTouch = true;
+    const t = e.touches[0];
+    if (t) {
+      mx = rx = t.clientX; my = ry = t.clientY;
+      cursor.style.left = mx + 'px'; cursor.style.top = my + 'px';
+      ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+    }
+    showCursor();
+  }, { passive: true });
+  document.addEventListener('touchmove', e => {
+    const t = e.touches[0];
+    if (t) { mx = t.clientX; my = t.clientY; cursor.style.left = mx + 'px'; cursor.style.top = my + 'px'; }
+  }, { passive: true });
+  document.addEventListener('touchend', hideCursor);
+  document.addEventListener('touchcancel', hideCursor);
+  window.addEventListener('scroll', () => { if (usingTouch) hideCursor(); }, { passive: true });
 
   (function animRing() {
     rx += (mx - rx) * 0.12;
@@ -1186,7 +1269,7 @@ footer {
     requestAnimationFrame(animRing);
   })();
 
-  document.querySelectorAll('a, button, .dot').forEach(el => {
+  document.querySelectorAll('a, button, .slide-dot').forEach(el => {
     el.addEventListener('mouseenter', () => {
       cursor.style.transform = 'translate(-50%,-50%) scale(2.5)';
       ring.style.transform   = 'translate(-50%,-50%) scale(1.4)';
@@ -1228,7 +1311,7 @@ footer {
 
   /* ------ FEATURED SLIDER ------ */
   const slides = document.querySelectorAll('.featured-slide');
-  const dots   = document.querySelectorAll('.dot');
+  const dots   = document.querySelectorAll('.slide-dot');
   let current  = 0;
   let autoTimer;
 
@@ -1261,11 +1344,12 @@ footer {
     e.preventDefault();
     const btn  = document.getElementById('nlBtn');
     const text = document.getElementById('nlBtnText');
-    text.textContent = 'Zapisano ✓';
+    const lang = document.documentElement.getAttribute('data-lang') || 'pl';
+    text.textContent = lang === 'en' ? 'Signed up ✓' : 'Zapisano ✓';
     btn.disabled = true;
     btn.style.borderBottomColor = 'rgba(237,234,224,0.6)';
     setTimeout(() => {
-      text.textContent = 'Zapisz się';
+      text.innerHTML = '<span class="lang-pl">Zapisz się</span><span class="lang-en">Sign up</span>';
       btn.disabled = false;
       btn.style.borderBottomColor = '';
       e.target.reset();

@@ -2,6 +2,7 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
+<script>document.documentElement.setAttribute('data-lang', sessionStorage.getItem('vm-lang') || 'pl');</script>
 <link rel="icon" type="image/png" href="logo-kolko-favicon.png">
 <link rel="apple-touch-icon" href="logo-kolko-favicon.png">
 <!-- Security -->
@@ -24,9 +25,32 @@
 <meta property="og:locale" content="pl_PL">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;600;700;900&family=Bebas+Neue&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;700&family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;700&family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"></noscript>
 <style>
   *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  /* ===== I18N (PL/EN) ===== */
+  html[data-lang="pl"] .lang-en { display: none; }
+  html[data-lang="en"] .lang-pl { display: none; }
+  .lang-toggle {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--cream);
+  }
+  .lang-toggle .lang-sep { opacity: 0.3; }
+  .lang-toggle span[data-tag] { opacity: 0.4; transition: opacity 0.2s; }
+  .lang-toggle:hover span[data-tag] { opacity: 0.7; }
+  html[data-lang="pl"] .lang-toggle span[data-tag="pl"],
+  html[data-lang="en"] .lang-toggle span[data-tag="en"] { opacity: 1 !important; }
 
   :root {
     --cream: #EDEAE0;
@@ -42,8 +66,9 @@
   body { background: var(--cream); color: var(--black); font-family: var(--font-body); cursor: none; overflow-x: hidden; }
 
   /* CURSOR */
-  .cursor { position: fixed; width: 10px; height: 10px; background: #FAFAF7; border-radius: 50%; pointer-events: none; z-index: 9999; transform: translate(-50%,-50%); transition: transform 0.1s ease; mix-blend-mode: difference; }
+  .cursor { position: fixed; width: 10px; height: 10px; background: #FAFAF7; border-radius: 50%; pointer-events: none; z-index: 9999; transform: translate(-50%,-50%); transition: transform 0.1s ease, opacity 0.25s ease; mix-blend-mode: difference; }
   .cursor-ring { position: fixed; width: 36px; height: 36px; border: 1.5px solid #FAFAF7; border-radius: 50%; pointer-events: none; z-index: 9998; transform: translate(-50%,-50%); transition: all 0.18s ease; opacity: 0.5; mix-blend-mode: difference; }
+  body:not(.cursor-active) .cursor, body:not(.cursor-active) .cursor-ring { opacity: 0 !important; }
 
   /* SCROLLBAR */
   ::-webkit-scrollbar { width: 3px; }
@@ -70,6 +95,7 @@
   .mobile-menu.open { display: flex; }
   .mobile-menu a { font-family: var(--font-display); font-size: clamp(36px,8vw,72px); color: var(--cream); text-decoration: none; letter-spacing: 4px; transition: opacity 0.2s; opacity: 0.8; }
   .mobile-menu a:hover { opacity: 1; }
+  .mobile-lang-toggle { color: var(--cream); font-size: 13px; margin-top: 8px; }
   .mobile-close { position: absolute; top: 28px; right: 48px; font-family: var(--font-mono); font-size: 11px; color: var(--cream); cursor: none; background: none; border: none; letter-spacing: 2px; opacity: 0.6; }
 
   /* REVEAL */
@@ -435,48 +461,58 @@
 
 <!-- MOBILE MENU -->
 <div class="mobile-menu" id="mobileMenu">
-  <button class="mobile-close" id="mobileClose">[ ZAMKNIJ ]</button>
-  <a href="/">Strona główna</a>
-  <a href="o-nas.html">O Nas</a>
-  <a href="zespol.html">Zespół</a>
-  <a href="spolecznosc.html">Społeczność</a>
+  <button class="mobile-close" id="mobileClose">[ <span class="lang-pl">ZAMKNIJ</span><span class="lang-en">CLOSE</span> ]</button>
+  <a href="/"><span class="lang-pl">Strona główna</span><span class="lang-en">Home</span></a>
+  <a href="o-nas.html"><span class="lang-pl">O Nas</span><span class="lang-en">About Us</span></a>
+  <a href="zespol.html"><span class="lang-pl">Zespół</span><span class="lang-en">Team</span></a>
+  <a href="spolecznosc.html"><span class="lang-pl">Społeczność</span><span class="lang-en">Community</span></a>
   <a href="blog.html">Blog</a>
-  <a href="sklep.html">Sklep</a>
-  <a href="kontakt.html">Kontakt</a>
+  <a href="sklep.html"><span class="lang-pl">Sklep</span><span class="lang-en">Shop</span></a>
+  <a href="kontakt.html"><span class="lang-pl">Kontakt</span><span class="lang-en">Contact</span></a>
+  <button class="lang-toggle mobile-lang-toggle" id="langToggleMobile" aria-label="Zmień język / Change language" type="button">
+    <span data-tag="pl">PL</span><span class="lang-sep">/</span><span data-tag="en">EN</span>
+  </button>
 </div>
 
 <!-- NAV -->
 <nav id="navbar">
   <a href="/" class="nav-logo">
-    <img src="VersatileMovement_logo1_png.webp" alt="Versatile Movement" class="nav-logo-img">
+    <img src="VersatileMovement_logo1_png-sm.webp" alt="Versatile Movement" class="nav-logo-img" width="640" height="422">
   </a>
   <ul class="nav-links">
     <li><a href="/">Home</a></li>
-    <li><a href="o-nas.html">O Nas</a></li>
-    <li><a href="spolecznosc.html">Społeczność</a></li>
-    <li><a href="zespol.html" class="active">Zespół</a></li>
+    <li><a href="o-nas.html"><span class="lang-pl">O Nas</span><span class="lang-en">About Us</span></a></li>
+    <li><a href="spolecznosc.html"><span class="lang-pl">Społeczność</span><span class="lang-en">Community</span></a></li>
+    <li><a href="zespol.html" class="active"><span class="lang-pl">Zespół</span><span class="lang-en">Team</span></a></li>
     <li><a href="blog.html">Blog</a></li>
-    <li><a href="kontakt.html">Kontakt</a></li>
-    <li class="nav-shop"><a href="sklep.html">Sklep</a></li>
+    <li><a href="kontakt.html"><span class="lang-pl">Kontakt</span><span class="lang-en">Contact</span></a></li>
+    <li class="nav-shop"><a href="sklep.html"><span class="lang-pl">Sklep</span><span class="lang-en">Shop</span></a></li>
+    <li>
+      <button class="lang-toggle" id="langToggle" aria-label="Zmień język / Change language" type="button">
+        <span data-tag="pl">PL</span><span class="lang-sep">/</span><span data-tag="en">EN</span>
+      </button>
+    </li>
   </ul>
   <button class="hamburger" id="hamburger">
     <span></span><span></span><span></span>
   </button>
 </nav>
 
+<main>
 <!-- HERO -->
 <section class="hero">
   <div class="hero-bg"></div>
   <div class="hero-overlay"></div>
   <div class="hero-content">
-    <p class="hero-eyebrow">Versatile Movement — Ludzie</p>
+    <p class="hero-eyebrow"><span class="lang-pl">Versatile Movement — Ludzie</span><span class="lang-en">Versatile Movement — People</span></p>
     <h1 class="hero-title">
-      ZES<span class="outline-letter">PÓŁ</span>
+      <span class="lang-pl">ZES<span class="outline-letter">PÓŁ</span></span>
+      <span class="lang-en">TE<span class="outline-letter">AM</span></span>
     </h1>
     <div class="hero-sub-row">
       <div class="hero-scroll-hint">
         <div class="hero-scroll-line"></div>
-        Poznaj nas
+        <span class="lang-pl">Poznaj nas</span><span class="lang-en">Meet us</span>
       </div>
     </div>
   </div>
@@ -486,16 +522,16 @@
 <div class="ticker">
   <div class="ticker-inner">
     <span>VERSATILE MOVEMENT</span><span class="dot">◆</span>
-    <span>KALISTENIKA</span><span class="dot">◆</span>
+    <span class="lang-pl">KALISTENIKA</span><span class="lang-en">CALISTHENICS</span><span class="dot">◆</span>
     <span>PERSIAN MEELS</span><span class="dot">◆</span>
     <span>INDIAN CLUBS</span><span class="dot">◆</span>
-    <span>FILOZOFIA RUCHU</span><span class="dot">◆</span>
+    <span class="lang-pl">FILOZOFIA RUCHU</span><span class="lang-en">MOVEMENT PHILOSOPHY</span><span class="dot">◆</span>
     <span>MOVEMENT</span><span class="dot">◆</span>
     <span>VERSATILE MOVEMENT</span><span class="dot">◆</span>
-    <span>KALISTENIKA</span><span class="dot">◆</span>
+    <span class="lang-pl">KALISTENIKA</span><span class="lang-en">CALISTHENICS</span><span class="dot">◆</span>
     <span>PERSIAN MEELS</span><span class="dot">◆</span>
     <span>INDIAN CLUBS</span><span class="dot">◆</span>
-    <span>FILOZOFIA RUCHU</span><span class="dot">◆</span>
+    <span class="lang-pl">FILOZOFIA RUCHU</span><span class="lang-en">MOVEMENT PHILOSOPHY</span><span class="dot">◆</span>
     <span>MOVEMENT</span><span class="dot">◆</span>
   </div>
 </div>
@@ -503,15 +539,16 @@
 <!-- INTRO -->
 <section class="intro">
   <div>
-    <span class="intro-label reveal">— Zespół</span>
+    <span class="intro-label reveal"><span class="lang-pl">— Zespół</span><span class="lang-en">— Team</span></span>
   </div>
   <div>
     <h2 class="intro-title reveal">
-      LUDZIE<br>
-      <span class="outline">ZA RUCHEM</span>
+      <span class="lang-pl">LUDZIE<br><span class="outline">ZA RUCHEM</span></span>
+      <span class="lang-en">THE PEOPLE<br><span class="outline">BEHIND THE MOVEMENT</span></span>
     </h2>
     <p class="intro-text reveal reveal-delay-1">
-      Versatile Movement tworzy mała, zdeterminowana ekipa — każdy z nas praktykuje to, czego naucza. Łączy nas jedno: głęboka wiara, że ruch zmienia życie.
+      <span class="lang-pl">Versatile Movement tworzy mała, zdeterminowana ekipa — każdy z nas praktykuje to, czego naucza. Łączy nas jedno: głęboka wiara, że ruch zmienia życie.</span>
+      <span class="lang-en">Versatile Movement is built by a small, determined crew — each of us practices what we teach. We're united by one thing: a deep belief that movement changes life.</span>
     </p>
   </div>
 </section>
@@ -529,10 +566,11 @@
         <span class="member-num">01</span>
       </div>
       <div class="member-info">
-        <span class="member-role">Założyciel &amp; Coach</span>
+        <span class="member-role"><span class="lang-pl">Założyciel &amp; Coach</span><span class="lang-en">Founder &amp; Coach</span></span>
         <h3 class="member-name">KAROL</h3>
         <p class="member-bio">
-          Twórca Versatile Movement. Od ponad dekady eksploruje trening i ruch jako filozofię - łącząc tradycję starożytnych narzędzi i ćwiczeń z nowoczesną biomechaniką. Dzieli się wiedzą, inspiruje i prowadzi społeczność w stronę świadomego życia.
+          <span class="lang-pl">Twórca Versatile Movement. Od ponad dekady eksploruje trening i ruch jako filozofię - łącząc tradycję starożytnych narzędzi i ćwiczeń z nowoczesną biomechaniką. Dzieli się wiedzą, inspiruje i prowadzi społeczność w stronę świadomego życia.</span>
+          <span class="lang-en">Founder of Versatile Movement. For over a decade he has explored training and movement as a philosophy — combining the tradition of ancient tools and exercises with modern biomechanics. He shares knowledge, inspires, and leads the community toward a more conscious life.</span>
         </p>
         <div class="member-tags">
           <span class="mtag">Movement</span>
@@ -551,10 +589,11 @@
         <span class="member-num">02</span>
       </div>
       <div class="member-info">
-        <span class="member-role">Współzałożyciel &amp; Coach</span>
+        <span class="member-role"><span class="lang-pl">Współzałożyciel &amp; Coach</span><span class="lang-en">Co-founder &amp; Coach</span></span>
         <h3 class="member-name">OSKAR</h3>
         <p class="member-bio">
-          Współtwórca Versatile Movement. Specjalizuje się w treningu z wykorzystaniem własnej masy ciała, rozwijając siłę, mobilność i kontrolę ruchu, stawiając na funkcjonalne i wszechstronne podejście do treningu. Naucza i inspiruje, wspierając rozwój społeczności.
+          <span class="lang-pl">Współtwórca Versatile Movement. Specjalizuje się w treningu z wykorzystaniem własnej masy ciała, rozwijając siłę, mobilność i kontrolę ruchu, stawiając na funkcjonalne i wszechstronne podejście do treningu. Naucza i inspiruje, wspierając rozwój społeczności.</span>
+          <span class="lang-en">Co-creator of Versatile Movement. He specializes in bodyweight training, developing strength, mobility, and movement control, with a focus on a functional and versatile approach to training. He teaches and inspires, supporting the growth of the community.</span>
         </p>
         <div class="member-tags">
           <span class="mtag">Calisthenics</span>
@@ -573,10 +612,11 @@
         <span class="member-num">03</span>
       </div>
       <div class="member-info">
-        <span class="member-role">Współtwórca &amp; Ambasador Marki</span>
+        <span class="member-role"><span class="lang-pl">Współtwórca &amp; Ambasador Marki</span><span class="lang-en">Co-creator &amp; Brand Ambassador</span></span>
         <h3 class="member-name">KACPER</h3>
         <p class="member-bio">
-          Ambasador marki Versatile Movement. Reprezentuje podejście oparte na świadomym ruchu, sile funkcjonalnej i pracy z własnym ciałem. Dzieli się doświadczeniem i swoją drogą, inspiruje do treningu i pokazuje naturalne podejście do rozwoju sprawności. Pasja, spójność, autentyczność.
+          <span class="lang-pl">Ambasador marki Versatile Movement. Reprezentuje podejście oparte na świadomym ruchu, sile funkcjonalnej i pracy z własnym ciałem. Dzieli się doświadczeniem i swoją drogą, inspiruje do treningu i pokazuje naturalne podejście do rozwoju sprawności. Pasja, spójność, autentyczność.</span>
+          <span class="lang-en">Ambassador of the Versatile Movement brand. He represents an approach based on conscious movement, functional strength, and bodyweight work. He shares his experience and his own path, inspires training, and shows a natural approach to fitness development. Passion, consistency, authenticity.</span>
         </p>
         <div class="member-tags">
           <span class="mtag">Unconventional</span>
@@ -591,38 +631,76 @@
 
 <!-- CTA -->
 <section class="cta-section">
-  <span class="cta-label reveal">— Dołącz do nas</span>
+  <span class="cta-label reveal"><span class="lang-pl">— Dołącz do nas</span><span class="lang-en">— Join us</span></span>
   <h2 class="cta-title reveal reveal-delay-1">
-    TRENUJ<br>
-    Z <span class="outline">NAMI</span>
+    <span class="lang-pl">TRENUJ<br>Z <span class="outline">NAMI</span></span>
+    <span class="lang-en">TRAIN<br>WITH <span class="outline">US</span></span>
   </h2>
   <div class="cta-buttons reveal reveal-delay-2">
-    <a href="spolecznosc.html" class="btn-cream">Nasza społeczność</a>
-    <a href="kontakt.html" class="btn-ghost-cream">Napisz do nas</a>
+    <a href="spolecznosc.html" class="btn-cream"><span class="lang-pl">Nasza społeczność</span><span class="lang-en">Our community</span></a>
+    <a href="kontakt.html" class="btn-ghost-cream"><span class="lang-pl">Napisz do nas</span><span class="lang-en">Get in touch</span></a>
   </div>
 </section>
+</main>
 
 <!-- FOOTER -->
 <footer class="footer">
-  <p class="footer-copy">© 2026 Versatile Movement — Wszelkie prawa zastrzeżone</p>
+  <p class="footer-copy">© 2026 Versatile Movement — <span class="lang-pl">Wszelkie prawa zastrzeżone</span><span class="lang-en">All rights reserved</span></p>
   <ul class="footer-links">
-    <li><a href="o-nas.html">O Nas</a></li>
-    <li><a href="zespol.html">Zespół</a></li>
-    <li><a href="spolecznosc.html">Społeczność</a></li>
-    <li><a href="sklep.html">Sklep</a></li>
+    <li><a href="o-nas.html"><span class="lang-pl">O Nas</span><span class="lang-en">About Us</span></a></li>
+    <li><a href="zespol.html"><span class="lang-pl">Zespół</span><span class="lang-en">Team</span></a></li>
+    <li><a href="spolecznosc.html"><span class="lang-pl">Społeczność</span><span class="lang-en">Community</span></a></li>
+    <li><a href="sklep.html"><span class="lang-pl">Sklep</span><span class="lang-en">Shop</span></a></li>
   </ul>
 </footer>
 
 <script>
+  // LANGUAGE TOGGLE
+  function setSiteLang(lang) {
+    document.documentElement.setAttribute('data-lang', lang);
+    sessionStorage.setItem('vm-lang', lang);
+  }
+  document.querySelectorAll('.lang-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-lang') || 'pl';
+      setSiteLang(current === 'pl' ? 'en' : 'pl');
+    });
+  });
+
   /* CURSOR */
   const cursor = document.getElementById('cursor');
   const cursorRing = document.getElementById('cursor-ring');
+  let usingTouch = false;
+  function showCursor() { document.body.classList.add('cursor-active'); }
+  function hideCursor() { document.body.classList.remove('cursor-active'); }
   document.addEventListener('mousemove', e => {
+    usingTouch = false;
     cursor.style.left = e.clientX + 'px';
     cursor.style.top = e.clientY + 'px';
     cursorRing.style.left = e.clientX + 'px';
     cursorRing.style.top = e.clientY + 'px';
+    showCursor();
   });
+  document.addEventListener('mouseleave', () => { if (!usingTouch) hideCursor(); });
+  document.addEventListener('touchstart', e => {
+    usingTouch = true;
+    const t = e.touches[0];
+    if (t) {
+      cursor.style.left = t.clientX + 'px'; cursor.style.top = t.clientY + 'px';
+      cursorRing.style.left = t.clientX + 'px'; cursorRing.style.top = t.clientY + 'px';
+    }
+    showCursor();
+  }, { passive: true });
+  document.addEventListener('touchmove', e => {
+    const t = e.touches[0];
+    if (t) {
+      cursor.style.left = t.clientX + 'px'; cursor.style.top = t.clientY + 'px';
+      cursorRing.style.left = t.clientX + 'px'; cursorRing.style.top = t.clientY + 'px';
+    }
+  }, { passive: true });
+  document.addEventListener('touchend', hideCursor);
+  document.addEventListener('touchcancel', hideCursor);
+  window.addEventListener('scroll', () => { if (usingTouch) hideCursor(); }, { passive: true });
   document.querySelectorAll('a, button').forEach(el => {
     el.addEventListener('mouseenter', () => {
       cursor.style.transform = 'translate(-50%,-50%) scale(2.2)';

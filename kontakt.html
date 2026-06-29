@@ -2,6 +2,7 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
+<script>document.documentElement.setAttribute('data-lang', sessionStorage.getItem('vm-lang') || 'pl');</script>
 <link rel="icon" type="image/png" href="logo-kolko-favicon.png">
 <link rel="apple-touch-icon" href="logo-kolko-favicon.png">
 <!-- Security -->
@@ -24,9 +25,32 @@
 <meta property="og:locale" content="pl_PL">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;600;700;900&family=Bebas+Neue&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;700&family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;700&family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"></noscript>
 <style>
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+/* ===== I18N (PL/EN) ===== */
+html[data-lang="pl"] .lang-en { display: none; }
+html[data-lang="en"] .lang-pl { display: none; }
+.lang-toggle {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--cream);
+}
+.lang-toggle .lang-sep { opacity: 0.3; }
+.lang-toggle span[data-tag] { opacity: 0.4; transition: opacity 0.2s; }
+.lang-toggle:hover span[data-tag] { opacity: 0.7; }
+html[data-lang="pl"] .lang-toggle span[data-tag="pl"],
+html[data-lang="en"] .lang-toggle span[data-tag="en"] { opacity: 1 !important; }
 
 :root {
   --cream: #EDEAE0;
@@ -47,7 +71,7 @@ body { background: var(--black); color: var(--cream); font-family: var(--font-bo
   pointer-events: none; z-index: 9999;
   left: -20px; top: -20px;
   transform: translate(-50%,-50%);
-  transition: transform 0.1s ease;
+  transition: transform 0.1s ease, opacity 0.25s ease;
   mix-blend-mode: difference;
 }
 .cursor-ring {
@@ -58,6 +82,10 @@ body { background: var(--black); color: var(--cream); font-family: var(--font-bo
   transform: translate(-50%,-50%);
   transition: transform 0.18s ease, opacity 0.18s ease;
   opacity: 0.5; mix-blend-mode: difference;
+}
+body:not(.cursor-active) .cursor,
+body:not(.cursor-active) .cursor-ring {
+  opacity: 0 !important;
 }
 
 /* SCROLLBAR */
@@ -121,6 +149,7 @@ nav.scrolled {
   transition: opacity 0.2s; opacity: 0.8;
 }
 .mobile-menu a:hover { opacity: 1; }
+.mobile-lang-toggle { color: var(--cream); font-size: 13px; margin-top: 8px; }
 .mobile-close {
   position: absolute; top: 28px; right: 48px;
   font-family: var(--font-mono); font-size: 11px;
@@ -410,7 +439,7 @@ footer {
   opacity: 0.28; max-width: 280px; line-height: 1.9; text-transform: uppercase;
 }
 .footer-links { display: flex; gap: 64px; flex-wrap: wrap; }
-.footer-col h4 {
+.footer-col h3 {
   font-family: var(--font-mono); font-size: 9px; letter-spacing: 3px;
   text-transform: uppercase; opacity: 0.28; margin-bottom: 20px;
 }
@@ -489,16 +518,21 @@ footer {
 <!-- NAV -->
 <nav id="navbar">
   <a href="/" class="nav-logo">
-    <img src="VersatileMovement_logo1_png.webp" alt="Versatile Movement" class="nav-logo-img">
+    <img src="VersatileMovement_logo1_png-sm.webp" alt="Versatile Movement" class="nav-logo-img" width="640" height="422">
   </a>
   <ul class="nav-links">
     <li><a href="/">Home</a></li>
-    <li><a href="o-nas.html">O nas</a></li>
-    <li><a href="spolecznosc.html">Społeczność</a></li>
-    <li><a href="zespol.html">Zespół</a></li>
+    <li><a href="o-nas.html"><span class="lang-pl">O nas</span><span class="lang-en">About Us</span></a></li>
+    <li><a href="spolecznosc.html"><span class="lang-pl">Społeczność</span><span class="lang-en">Community</span></a></li>
+    <li><a href="zespol.html"><span class="lang-pl">Zespół</span><span class="lang-en">Team</span></a></li>
     <li><a href="blog.html">Blog</a></li>
-    <li><a href="kontakt.html" class="active">Kontakt</a></li>
-    <li class="nav-shop"><a href="sklep.html">Sklep</a></li>
+    <li><a href="kontakt.html" class="active"><span class="lang-pl">Kontakt</span><span class="lang-en">Contact</span></a></li>
+    <li class="nav-shop"><a href="sklep.html"><span class="lang-pl">Sklep</span><span class="lang-en">Shop</span></a></li>
+    <li>
+      <button class="lang-toggle" id="langToggle" aria-label="Zmień język / Change language" type="button">
+        <span data-tag="pl">PL</span><span class="lang-sep">/</span><span data-tag="en">EN</span>
+      </button>
+    </li>
   </ul>
   <button class="hamburger" id="hamburger" aria-label="Menu">
     <span></span><span></span><span></span>
@@ -507,16 +541,20 @@ footer {
 
 <!-- MOBILE MENU -->
 <div class="mobile-menu" id="mobileMenu">
-  <button class="mobile-close" id="mobileClose">ZAMKNIJ</button>
+  <button class="mobile-close" id="mobileClose"><span class="lang-pl">ZAMKNIJ</span><span class="lang-en">CLOSE</span></button>
   <a href="/" onclick="closeMobile()">HOME</a>
-  <a href="o-nas.html" onclick="closeMobile()">O NAS</a>
-  <a href="spolecznosc.html" onclick="closeMobile()">SPOŁECZNOŚĆ</a>
-  <a href="zespol.html" onclick="closeMobile()">ZESPÓŁ</a>
+  <a href="o-nas.html" onclick="closeMobile()"><span class="lang-pl">O NAS</span><span class="lang-en">ABOUT US</span></a>
+  <a href="spolecznosc.html" onclick="closeMobile()"><span class="lang-pl">SPOŁECZNOŚĆ</span><span class="lang-en">COMMUNITY</span></a>
+  <a href="zespol.html" onclick="closeMobile()"><span class="lang-pl">ZESPÓŁ</span><span class="lang-en">TEAM</span></a>
   <a href="blog.html" onclick="closeMobile()">BLOG</a>
-  <a href="kontakt.html" onclick="closeMobile()">KONTAKT</a>
-  <a href="sklep.html" onclick="closeMobile()">SKLEP</a>
+  <a href="kontakt.html" onclick="closeMobile()"><span class="lang-pl">KONTAKT</span><span class="lang-en">CONTACT</span></a>
+  <a href="sklep.html" onclick="closeMobile()"><span class="lang-pl">SKLEP</span><span class="lang-en">SHOP</span></a>
+  <button class="lang-toggle mobile-lang-toggle" id="langToggleMobile" aria-label="Zmień język / Change language" type="button">
+    <span data-tag="pl">PL</span><span class="lang-sep">/</span><span data-tag="en">EN</span>
+  </button>
 </div>
 
+<main>
 <!-- ===== SPLIT: INFO + FORM ===== -->
 <div class="split">
 
@@ -525,14 +563,15 @@ footer {
     <div class="split-grain"></div>
     <span class="split-watermark" aria-hidden="true">VM</span>
     <div class="split-left-inner">
-      <span class="split-eyebrow">07 — Kontakt / Współpraca</span>
+      <span class="split-eyebrow"><span class="lang-pl">Kontakt / Współpraca</span><span class="lang-en">Contact / Partnership</span></span>
       <h1 class="split-title">
-        NAPISZ<br>
-        <span>DO NAS</span>
+        <span class="lang-pl">NAPISZ<br><span>DO NAS</span></span>
+        <span class="lang-en">GET IN<br><span>TOUCH</span></span>
       </h1>
       <div class="split-sep"></div>
       <p class="split-desc">
-        Pytania, współpraca,<br>zamówienia — jesteśmy tu.
+        <span class="lang-pl">Pytania, współpraca,<br>zamówienia — jesteśmy tu.</span>
+        <span class="lang-en">Questions, partnerships,<br>orders — we're here.</span>
       </p>
       <span class="split-email-label">Email</span>
       <a href="mailto:kontakt@versatilemovement.pl" class="split-email-link">
@@ -543,49 +582,58 @@ footer {
 
   <!-- RIGHT — cream form panel -->
   <div class="split-right">
-    <span class="form-tag">Formularz kontaktowy</span>
-    <h2 class="form-heading">KONTAKT</h2>
+    <span class="form-tag"><span class="lang-pl">Formularz kontaktowy</span><span class="lang-en">Contact form</span></span>
+    <h2 class="form-heading"><span class="lang-pl">KONTAKT</span><span class="lang-en">CONTACT</span></h2>
 
     <form class="contact-form" id="contactForm" onsubmit="handleSubmit(event)" novalidate>
 
       <div class="fg">
-        <label class="fg-label" for="fname">Imię</label>
-        <input class="fg-input" id="fname" type="text" placeholder="Jan" required>
+        <label class="fg-label" for="fname"><span class="lang-pl">Imię</span><span class="lang-en">First name</span></label>
+        <input class="fg-input" id="fname" type="text" placeholder="Jan" data-ph-pl="Jan" data-ph-en="John" required>
       </div>
 
       <div class="fg">
-        <label class="fg-label" for="lname">Nazwisko</label>
-        <input class="fg-input" id="lname" type="text" placeholder="Kowalski" required>
+        <label class="fg-label" for="lname"><span class="lang-pl">Nazwisko</span><span class="lang-en">Last name</span></label>
+        <input class="fg-input" id="lname" type="text" placeholder="Kowalski" data-ph-pl="Kowalski" data-ph-en="Smith" required>
       </div>
 
       <div class="fg">
         <label class="fg-label" for="email">E-mail</label>
-        <input class="fg-input" id="email" type="email" placeholder="jan@email.com" required>
+        <input class="fg-input" id="email" type="email" placeholder="jan@email.com" data-ph-pl="jan@email.com" data-ph-en="john@email.com" required>
       </div>
 
       <div class="fg">
-        <label class="fg-label" for="topic">Temat</label>
+        <label class="fg-label" for="topic"><span class="lang-pl">Temat</span><span class="lang-en">Subject</span></label>
         <select class="fg-select" id="topic">
-          <option value="ogolne">Ogólne zapytanie</option>
-          <option value="warsztaty">Warsztaty i eventy</option>
-          <option value="programy">Programy treningowe</option>
-          <option value="sklep">Zamówienie / Sklep</option>
-          <option value="wspolpraca">Współpraca</option>
-          <option value="inne">Inne</option>
+          <option value="ogolne" class="lang-pl">Ogólne zapytanie</option>
+          <option value="ogolne" class="lang-en">General inquiry</option>
+          <option value="warsztaty" class="lang-pl">Warsztaty i eventy</option>
+          <option value="warsztaty" class="lang-en">Workshops and events</option>
+          <option value="programy" class="lang-pl">Programy treningowe</option>
+          <option value="programy" class="lang-en">Training programs</option>
+          <option value="sklep" class="lang-pl">Zamówienie / Sklep</option>
+          <option value="sklep" class="lang-en">Order / Shop</option>
+          <option value="wspolpraca" class="lang-pl">Współpraca</option>
+          <option value="wspolpraca" class="lang-en">Partnership</option>
+          <option value="inne" class="lang-pl">Inne</option>
+          <option value="inne" class="lang-en">Other</option>
         </select>
       </div>
 
       <div class="fg wide">
-        <label class="fg-label" for="message">Wiadomość</label>
-        <textarea class="fg-textarea" id="message" placeholder="Napisz do nas..." required></textarea>
+        <label class="fg-label" for="message"><span class="lang-pl">Wiadomość</span><span class="lang-en">Message</span></label>
+        <textarea class="fg-textarea" id="message" placeholder="Napisz do nas..." data-ph-pl="Napisz do nas..." data-ph-en="Write to us..." required></textarea>
       </div>
 
       <div class="fg-submit-wrap">
-        <button type="submit" class="fg-submit" id="submitBtn">Wyślij wiadomość</button>
+        <button type="submit" class="fg-submit" id="submitBtn"><span class="lang-pl">Wyślij wiadomość</span><span class="lang-en">Send message</span></button>
         <span class="fg-arrow">→</span>
       </div>
 
-      <p class="form-note">Wysyłając formularz akceptujesz przetwarzanie danych osobowych w celu obsługi zapytania. Odpowiadamy w ciągu 24–48h.</p>
+      <p class="form-note">
+        <span class="lang-pl">Wysyłając formularz akceptujesz przetwarzanie danych osobowych w celu obsługi zapytania. Odpowiadamy w ciągu 24–48h.</span>
+        <span class="lang-en">By submitting this form you consent to the processing of your personal data to handle your inquiry. We respond within 24–48h.</span>
+      </p>
 
     </form>
   </div>
@@ -597,7 +645,8 @@ footer {
   <div class="social-section-inner">
 
     <h2 class="social-heading reveal">
-      BĄDŹ<br><span>NA BIEŻĄCO</span>
+      <span class="lang-pl">BĄDŹ<br><span>NA BIEŻĄCO</span></span>
+      <span class="lang-en">STAY<br><span>IN THE LOOP</span></span>
     </h2>
 
     <div class="social-grid reveal reveal-delay-1">
@@ -627,63 +676,103 @@ footer {
 
   </div>
 </section>
+</main>
 
 <!-- ===== FOOTER ===== -->
 <footer>
   <div class="footer-top">
     <div>
       <span class="footer-logo">VERSATILE<br>MOVEMENT</span>
-      <p class="footer-tagline">When we change the way we move,<br>we change the way we live.<br><br>Pierwsza w Polsce marka ruchu.</p>
+      <p class="footer-tagline">When we change the way we move,<br>we change the way we live.<br><br><span class="lang-pl">Pierwsza w Polsce marka ruchu.</span><span class="lang-en">Poland's first movement brand.</span></p>
     </div>
     <div class="footer-links">
       <div class="footer-col">
-        <h4>Nawigacja</h4>
+        <h3><span class="lang-pl">Nawigacja</span><span class="lang-en">Navigation</span></h3>
         <ul>
           <li><a href="/">Home</a></li>
-          <li><a href="o-nas.html">O nas</a></li>
-          <li><a href="spolecznosc.html">Społeczność</a></li>
-          <li><a href="zespol.html">Zespół</a></li>
+          <li><a href="o-nas.html"><span class="lang-pl">O nas</span><span class="lang-en">About Us</span></a></li>
+          <li><a href="spolecznosc.html"><span class="lang-pl">Społeczność</span><span class="lang-en">Community</span></a></li>
+          <li><a href="zespol.html"><span class="lang-pl">Zespół</span><span class="lang-en">Team</span></a></li>
           <li><a href="blog.html">Blog</a></li>
-          <li><a href="kontakt.html">Kontakt</a></li>
+          <li><a href="kontakt.html"><span class="lang-pl">Kontakt</span><span class="lang-en">Contact</span></a></li>
         </ul>
       </div>
       <div class="footer-col">
-        <h4>Sklep</h4>
+        <h3><span class="lang-pl">Sklep</span><span class="lang-en">Shop</span></h3>
         <ul>
           <li><a href="sklep.html#persian-meels">Persian Meels</a></li>
           <li><a href="sklep.html#indian-clubs">Indian Clubs</a></li>
-          <li><a href="sklep.html#akcesoria">Akcesoria</a></li>
-          <li><a href="sklep.html#odziez">Odzież</a></li>
-          <li><a href="sklep.html#programy">Programy treningowe</a></li>
+          <li><a href="sklep.html#akcesoria"><span class="lang-pl">Akcesoria</span><span class="lang-en">Accessories</span></a></li>
+          <li><a href="sklep.html#odziez"><span class="lang-pl">Odzież</span><span class="lang-en">Apparel</span></a></li>
+          <li><a href="sklep.html#programy"><span class="lang-pl">Programy treningowe</span><span class="lang-en">Training Programs</span></a></li>
         </ul>
       </div>
       <div class="footer-col">
-        <h4>Social media</h4>
+        <h3>Social media</h3>
         <ul>
           <li><a href="https://www.instagram.com/versatile.movement" target="_blank" rel="noopener noreferrer">Instagram</a></li>
           <li><a href="https://www.facebook.com/bournemouthcalisthenics/" target="_blank" rel="noopener noreferrer">Facebook</a></li>
           <li><a href="https://www.youtube.com/@versatilemovement993" target="_blank" rel="noopener noreferrer">YouTube</a></li>
 
-          <li><a href="sklep.html">Sklep</a></li>
+          <li><a href="sklep.html"><span class="lang-pl">Sklep</span><span class="lang-en">Shop</span></a></li>
         </ul>
       </div>
     </div>
   </div>
   <div class="footer-bottom">
-    <span class="footer-copy">© 2026 Versatile Movement. Wszelkie prawa zastrzeżone.</span>
+    <span class="footer-copy">© 2026 Versatile Movement. <span class="lang-pl">Wszelkie prawa zastrzeżone.</span><span class="lang-en">All rights reserved.</span></span>
     <span class="footer-motto">MOVE. EXPLORE. LIVE.</span>
   </div>
 </footer>
 
 <script>
+  // LANGUAGE TOGGLE
+  function setSiteLang(lang) {
+    document.documentElement.setAttribute('data-lang', lang);
+    sessionStorage.setItem('vm-lang', lang);
+    document.querySelectorAll('[data-ph-pl]').forEach(el => {
+      el.placeholder = lang === 'en' ? el.dataset.phEn : el.dataset.phPl;
+    });
+  }
+  document.querySelectorAll('.lang-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-lang') || 'pl';
+      setSiteLang(current === 'pl' ? 'en' : 'pl');
+    });
+  });
+  setSiteLang(document.documentElement.getAttribute('data-lang') || 'pl');
+
   // CURSOR
   const cursor = document.getElementById('cursor');
   const ring   = document.getElementById('cursorRing');
   let mx = 0, my = 0, rx = 0, ry = 0;
+  let usingTouch = false;
+  function showCursor() { document.body.classList.add('cursor-active'); }
+  function hideCursor() { document.body.classList.remove('cursor-active'); }
   document.addEventListener('mousemove', e => {
+    usingTouch = false;
     mx = e.clientX; my = e.clientY;
     cursor.style.left = mx + 'px'; cursor.style.top = my + 'px';
+    showCursor();
   });
+  document.addEventListener('mouseleave', () => { if (!usingTouch) hideCursor(); });
+  document.addEventListener('touchstart', e => {
+    usingTouch = true;
+    const t = e.touches[0];
+    if (t) {
+      mx = rx = t.clientX; my = ry = t.clientY;
+      cursor.style.left = mx + 'px'; cursor.style.top = my + 'px';
+      ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+    }
+    showCursor();
+  }, { passive: true });
+  document.addEventListener('touchmove', e => {
+    const t = e.touches[0];
+    if (t) { mx = t.clientX; my = t.clientY; cursor.style.left = mx + 'px'; cursor.style.top = my + 'px'; }
+  }, { passive: true });
+  document.addEventListener('touchend', hideCursor);
+  document.addEventListener('touchcancel', hideCursor);
+  window.addEventListener('scroll', () => { if (usingTouch) hideCursor(); }, { passive: true });
   (function animRing() {
     rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
     ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
@@ -726,9 +815,11 @@ footer {
   function handleSubmit(e) {
     e.preventDefault();
     const btn = document.getElementById('submitBtn');
-    btn.textContent = 'Wysłano ✓'; btn.disabled = true;
+    const lang = document.documentElement.getAttribute('data-lang') || 'pl';
+    btn.textContent = lang === 'en' ? 'Sent ✓' : 'Wysłano ✓';
+    btn.disabled = true;
     setTimeout(() => {
-      btn.textContent = 'Wyślij wiadomość';
+      btn.innerHTML = '<span class="lang-pl">Wyślij wiadomość</span><span class="lang-en">Send message</span>';
       btn.disabled = false;
       e.target.reset();
     }, 3000);

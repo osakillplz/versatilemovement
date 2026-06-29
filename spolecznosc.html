@@ -2,6 +2,7 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
+<script>document.documentElement.setAttribute('data-lang', sessionStorage.getItem('vm-lang') || 'pl');</script>
 <link rel="icon" type="image/png" href="logo-kolko-favicon.png">
 <link rel="apple-touch-icon" href="logo-kolko-favicon.png">
 <!-- Security -->
@@ -24,9 +25,32 @@
 <meta property="og:locale" content="pl_PL">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;600;700;900&family=Bebas+Neue&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;700&family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;700&family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"></noscript>
 <style>
   *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  /* ===== I18N (PL/EN) ===== */
+  html[data-lang="pl"] .lang-en { display: none; }
+  html[data-lang="en"] .lang-pl { display: none; }
+  .lang-toggle {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--cream);
+  }
+  .lang-toggle .lang-sep { opacity: 0.3; }
+  .lang-toggle span[data-tag] { opacity: 0.4; transition: opacity 0.2s; }
+  .lang-toggle:hover span[data-tag] { opacity: 0.7; }
+  html[data-lang="pl"] .lang-toggle span[data-tag="pl"],
+  html[data-lang="en"] .lang-toggle span[data-tag="en"] { opacity: 1 !important; }
 
   :root {
     --cream: #EDEAE0;
@@ -42,8 +66,9 @@
   body { background: var(--cream); color: var(--black); font-family: var(--font-body); cursor: none; overflow-x: hidden; }
 
   /* CURSOR */
-  .cursor { position: fixed; width: 10px; height: 10px; background: #FAFAF7; border-radius: 50%; pointer-events: none; z-index: 9999; transform: translate(-50%,-50%); transition: transform 0.1s ease; mix-blend-mode: difference; }
+  .cursor { position: fixed; width: 10px; height: 10px; background: #FAFAF7; border-radius: 50%; pointer-events: none; z-index: 9999; transform: translate(-50%,-50%); transition: transform 0.1s ease, opacity 0.25s ease; mix-blend-mode: difference; }
   .cursor-ring { position: fixed; width: 36px; height: 36px; border: 1.5px solid #FAFAF7; border-radius: 50%; pointer-events: none; z-index: 9998; transform: translate(-50%,-50%); transition: all 0.18s ease; opacity: 0.5; mix-blend-mode: difference; }
+  body:not(.cursor-active) .cursor, body:not(.cursor-active) .cursor-ring { opacity: 0 !important; }
 
   /* SCROLLBAR */
   ::-webkit-scrollbar { width: 3px; }
@@ -70,6 +95,7 @@
   .mobile-menu.open { display: flex; }
   .mobile-menu a { font-family: var(--font-display); font-size: clamp(36px,8vw,72px); color: var(--cream); text-decoration: none; letter-spacing: 4px; transition: opacity 0.2s; opacity: 0.8; }
   .mobile-menu a:hover { opacity: 1; }
+  .mobile-lang-toggle { color: var(--cream); font-size: 13px; margin-top: 8px; }
   .mobile-close { position: absolute; top: 28px; right: 48px; font-family: var(--font-mono); font-size: 11px; color: var(--cream); cursor: none; background: none; border: none; letter-spacing: 2px; opacity: 0.6; }
 
   /* REVEAL */
@@ -767,48 +793,54 @@
 
 <!-- MOBILE MENU -->
 <div class="mobile-menu" id="mobileMenu">
-  <button class="mobile-close" id="mobileClose">[ ZAMKNIJ ]</button>
+  <button class="mobile-close" id="mobileClose">[ <span class="lang-pl">ZAMKNIJ</span><span class="lang-en">CLOSE</span> ]</button>
   <a href="/">Home</a>
-  <a href="o-nas.html">O Nas</a>
-  <a href="spolecznosc.html">Społeczność</a>
-  <a href="zespol.html">Zespół</a>
+  <a href="o-nas.html"><span class="lang-pl">O Nas</span><span class="lang-en">About Us</span></a>
+  <a href="spolecznosc.html"><span class="lang-pl">Społeczność</span><span class="lang-en">Community</span></a>
+  <a href="zespol.html"><span class="lang-pl">Zespół</span><span class="lang-en">Team</span></a>
   <a href="blog.html">Blog</a>
-  <a href="kontakt.html">Kontakt</a>
-  <a href="sklep.html">Sklep</a>
+  <a href="kontakt.html"><span class="lang-pl">Kontakt</span><span class="lang-en">Contact</span></a>
+  <a href="sklep.html"><span class="lang-pl">Sklep</span><span class="lang-en">Shop</span></a>
+  <button class="lang-toggle mobile-lang-toggle" id="langToggleMobile" aria-label="Zmień język / Change language" type="button">
+    <span data-tag="pl">PL</span><span class="lang-sep">/</span><span data-tag="en">EN</span>
+  </button>
 </div>
 
 <!-- NAV -->
 <nav id="navbar">
   <a href="/" class="nav-logo">
-    <img src="VersatileMovement_logo1_png.webp" alt="Versatile Movement" class="nav-logo-img">
+    <img src="VersatileMovement_logo1_png-sm.webp" alt="Versatile Movement" class="nav-logo-img" width="640" height="422">
   </a>
   <ul class="nav-links">
     <li><a href="/">Home</a></li>
-    <li><a href="o-nas.html">O Nas</a></li>
-    <li><a href="spolecznosc.html" class="active">Społeczność</a></li>
-    <li><a href="zespol.html">Zespół</a></li>
+    <li><a href="o-nas.html"><span class="lang-pl">O Nas</span><span class="lang-en">About Us</span></a></li>
+    <li><a href="spolecznosc.html" class="active"><span class="lang-pl">Społeczność</span><span class="lang-en">Community</span></a></li>
+    <li><a href="zespol.html"><span class="lang-pl">Zespół</span><span class="lang-en">Team</span></a></li>
     <li><a href="blog.html">Blog</a></li>
-    <li><a href="kontakt.html">Kontakt</a></li>
-    <li class="nav-shop"><a href="sklep.html">Sklep</a></li>
+    <li><a href="kontakt.html"><span class="lang-pl">Kontakt</span><span class="lang-en">Contact</span></a></li>
+    <li class="nav-shop"><a href="sklep.html"><span class="lang-pl">Sklep</span><span class="lang-en">Shop</span></a></li>
+    <li>
+      <button class="lang-toggle" id="langToggle" aria-label="Zmień język / Change language" type="button">
+        <span data-tag="pl">PL</span><span class="lang-sep">/</span><span data-tag="en">EN</span>
+      </button>
+    </li>
   </ul>
   <button class="hamburger" id="hamburger">
     <span></span><span></span><span></span>
   </button>
 </nav>
 
+<main>
 <!-- ===== HERO ===== -->
 <section class="hero">
   <div class="hero-bg"></div>
   <div class="hero-overlay"></div>
   <div class="hero-grain"></div>
   <div class="hero-content">
-    <p class="hero-eyebrow">Versatile Movement — Społeczność</p>
+    <p class="hero-eyebrow"><span class="lang-pl">Versatile Movement — Społeczność</span><span class="lang-en">Versatile Movement — Community</span></p>
     <h1 class="hero-title">
-      DOŁĄCZ DO<br>
-      <span class="outline-word">ROSNĄCEJ</span><br>
-      SPOŁECZNOŚCI<br>
-      <span class="outline-word">RUCHU</span><br>
-      Z CAŁEJ POLSKI
+      <span class="lang-pl">DOŁĄCZ DO<br><span class="outline-word">ROSNĄCEJ</span><br>SPOŁECZNOŚCI<br><span class="outline-word">RUCHU</span><br>Z CAŁEJ POLSKI</span>
+      <span class="lang-en">JOIN A<br><span class="outline-word">GROWING</span><br>MOVEMENT<br><span class="outline-word">COMMUNITY</span><br>FROM ALL OF POLAND</span>
     </h1>
     <div class="hero-sub-row">
       <p class="hero-tagline">
@@ -817,7 +849,7 @@
       </p>
       <div class="hero-scroll-hint">
         <div class="hero-scroll-line"></div>
-        Przewiń w dół
+        <span class="lang-pl">Przewiń w dół</span><span class="lang-en">Scroll down</span>
       </div>
     </div>
   </div>
@@ -827,33 +859,34 @@
 <div class="ticker">
   <div class="ticker-inner">
     <span>VERSATILE MOVEMENT</span><span class="dot">◆</span>
-    <span>SPOŁECZNOŚĆ</span><span class="dot">◆</span>
-    <span>KALISTENIKA</span><span class="dot">◆</span>
+    <span class="lang-pl">SPOŁECZNOŚĆ</span><span class="lang-en">COMMUNITY</span><span class="dot">◆</span>
+    <span class="lang-pl">KALISTENIKA</span><span class="lang-en">CALISTHENICS</span><span class="dot">◆</span>
     <span>PERSIAN MEELS</span><span class="dot">◆</span>
     <span>INDIAN CLUBS</span><span class="dot">◆</span>
     <span>MOVE TOGETHER</span><span class="dot">◆</span>
     <span>#VERSATILEMOVEMENT</span><span class="dot">◆</span>
-    <span>FILOZOFIA RUCHU</span><span class="dot">◆</span>
+    <span class="lang-pl">FILOZOFIA RUCHU</span><span class="lang-en">MOVEMENT PHILOSOPHY</span><span class="dot">◆</span>
     <span>VERSATILE MOVEMENT</span><span class="dot">◆</span>
-    <span>SPOŁECZNOŚĆ</span><span class="dot">◆</span>
-    <span>KALISTENIKA</span><span class="dot">◆</span>
+    <span class="lang-pl">SPOŁECZNOŚĆ</span><span class="lang-en">COMMUNITY</span><span class="dot">◆</span>
+    <span class="lang-pl">KALISTENIKA</span><span class="lang-en">CALISTHENICS</span><span class="dot">◆</span>
     <span>PERSIAN MEELS</span><span class="dot">◆</span>
     <span>INDIAN CLUBS</span><span class="dot">◆</span>
     <span>MOVE TOGETHER</span><span class="dot">◆</span>
     <span>#VERSATILEMOVEMENT</span><span class="dot">◆</span>
-    <span>FILOZOFIA RUCHU</span><span class="dot">◆</span>
+    <span class="lang-pl">FILOZOFIA RUCHU</span><span class="lang-en">MOVEMENT PHILOSOPHY</span><span class="dot">◆</span>
   </div>
 </div>
 
 <!-- ===== DLA KOGO ===== -->
 <section class="dla-kogo">
-  <span class="section-label reveal">— 01 / Dla Kogo</span>
+  <span class="section-label reveal">— / <span class="lang-pl">Dla Kogo</span><span class="lang-en">Who It's For</span></span>
   <h2 class="section-heading reveal reveal-delay-1">
-    DLA<br>
-    <span class="outline">KOGO?</span>
+    <span class="lang-pl">DLA<br><span class="outline">KOGO?</span></span>
+    <span class="lang-en">WHO IS IT<br><span class="outline">FOR?</span></span>
   </h2>
   <p class="dla-kogo-intro reveal reveal-delay-2">
-    Nasze drzwi są otwarte dla każdego, kto traktuje ruch poważnie — niezależnie od dyscypliny, poziomu czy tła.
+    <span class="lang-pl">Nasze drzwi są otwarte dla każdego, kto traktuje ruch poważnie — niezależnie od dyscypliny, poziomu czy tła.</span>
+    <span class="lang-en">Our doors are open to anyone who takes movement seriously — regardless of discipline, level, or background.</span>
   </p>
 
   <div class="audience-grid">
@@ -861,48 +894,48 @@
       <div class="audience-num">01</div>
       <div class="audience-icon">VM</div>
       <div>
-        <div class="audience-name">ZAWODNICY<br>SZTUK WALKI</div>
-        <div class="audience-desc">BJJ · MMA · Boks · Zapasy<br>Rozwijaj kondycję i mobilność</div>
+        <div class="audience-name"><span class="lang-pl">ZAWODNICY<br>SZTUK WALKI</span><span class="lang-en">COMBAT<br>SPORTS ATHLETES</span></div>
+        <div class="audience-desc"><span class="lang-pl">BJJ · MMA · Boks · Zapasy<br>Rozwijaj kondycję i mobilność</span><span class="lang-en">BJJ · MMA · Boxing · Wrestling<br>Build conditioning and mobility</span></div>
       </div>
     </div>
     <div class="audience-card reveal reveal-delay-1">
       <div class="audience-num">02</div>
       <div class="audience-icon">FZ</div>
       <div>
-        <div class="audience-name">FIZJO&shy;TERAPEUCI</div>
-        <div class="audience-desc">Narzędzia do pracy<br>z ciałem i ruchem funkcjonalnym</div>
+        <div class="audience-name"><span class="lang-pl">FIZJO&shy;TERAPEUCI</span><span class="lang-en">PHYSIO&shy;THERAPISTS</span></div>
+        <div class="audience-desc"><span class="lang-pl">Narzędzia do pracy<br>z ciałem i ruchem funkcjonalnym</span><span class="lang-en">Tools for working<br>with the body and functional movement</span></div>
       </div>
     </div>
     <div class="audience-card reveal reveal-delay-2">
       <div class="audience-num">03</div>
       <div class="audience-icon">SP</div>
       <div>
-        <div class="audience-name">SPORTOWCY</div>
-        <div class="audience-desc">Każda dyscyplina · Każdy poziom<br>Ruch jako fundament</div>
+        <div class="audience-name"><span class="lang-pl">SPORTOWCY</span><span class="lang-en">ATHLETES</span></div>
+        <div class="audience-desc"><span class="lang-pl">Każda dyscyplina · Każdy poziom<br>Ruch jako fundament</span><span class="lang-en">Every discipline · Every level<br>Movement as a foundation</span></div>
       </div>
     </div>
     <div class="audience-card reveal reveal-delay-1">
       <div class="audience-num">04</div>
       <div class="audience-icon">AK</div>
       <div>
-        <div class="audience-name">OSOBY AKTYWNE<br>FIZYCZNIE</div>
-        <div class="audience-desc">Dla tych, którzy żyją ruchem<br>i szukają nowych wyzwań</div>
+        <div class="audience-name"><span class="lang-pl">OSOBY AKTYWNE<br>FIZYCZNIE</span><span class="lang-en">PHYSICALLY<br>ACTIVE PEOPLE</span></div>
+        <div class="audience-desc"><span class="lang-pl">Dla tych, którzy żyją ruchem<br>i szukają nowych wyzwań</span><span class="lang-en">For those who live for movement<br>and seek new challenges</span></div>
       </div>
     </div>
     <div class="audience-card reveal reveal-delay-2">
       <div class="audience-num">05</div>
       <div class="audience-icon">PA</div>
       <div>
-        <div class="audience-name">PASJONACI<br>RUCHU</div>
-        <div class="audience-desc">Ruch jako sztuka i styl życia<br>Odkryj to, co nie ma etykiety</div>
+        <div class="audience-name"><span class="lang-pl">PASJONACI<br>RUCHU</span><span class="lang-en">MOVEMENT<br>ENTHUSIASTS</span></div>
+        <div class="audience-desc"><span class="lang-pl">Ruch jako sztuka i styl życia<br>Odkryj to, co nie ma etykiety</span><span class="lang-en">Movement as art and lifestyle<br>Discover what has no label</span></div>
       </div>
     </div>
     <div class="audience-card reveal reveal-delay-3">
       <div class="audience-num">06</div>
       <div class="audience-icon">TR</div>
       <div>
-        <div class="audience-name">TRENERZY<br>PERSONALNI</div>
-        <div class="audience-desc">Metodologia · Narzędzia<br>Społeczność specjalistów</div>
+        <div class="audience-name"><span class="lang-pl">TRENERZY<br>PERSONALNI</span><span class="lang-en">PERSONAL<br>TRAINERS</span></div>
+        <div class="audience-desc"><span class="lang-pl">Metodologia · Narzędzia<br>Społeczność specjalistów</span><span class="lang-en">Methodology · Tools<br>A community of specialists</span></div>
       </div>
     </div>
   </div>
@@ -910,42 +943,46 @@
 
 <!-- ===== JAK DOŁĄCZYĆ ===== -->
 <section class="jak-dolaczyc">
-  <span class="section-label reveal">— 02 / Jak Dołączyć</span>
+  <span class="section-label reveal">— / <span class="lang-pl">Jak Dołączyć</span><span class="lang-en">How to Join</span></span>
   <h2 class="section-heading reveal reveal-delay-1">
-    JAK<br>
-    <span class="outline">DOŁĄCZYĆ</span>
+    <span class="lang-pl">JAK<br><span class="outline">DOŁĄCZYĆ</span></span>
+    <span class="lang-en">HOW TO<br><span class="outline">JOIN</span></span>
   </h2>
 
   <div class="steps-grid">
     <div class="step-card reveal">
       <div class="step-num">01</div>
-      <div class="step-title">OBSERWUJ<br>NAS</div>
+      <div class="step-title"><span class="lang-pl">OBSERWUJ<br>NAS</span><span class="lang-en">FOLLOW<br>US</span></div>
       <p class="step-desc">
-        Zacznij od Instagrama. Tam żyjemy na co dzień — treningi, kulisy, inspiracje i ruch bez filtrów.
+        <span class="lang-pl">Zacznij od Instagrama. Tam żyjemy na co dzień — treningi, kulisy, inspiracje i ruch bez filtrów.</span>
+        <span class="lang-en">Start with Instagram. That's where we live day to day — workouts, behind the scenes, inspiration, and movement without filters.</span>
       </p>
       <span class="step-arrow">↗</span>
     </div>
     <div class="step-card reveal reveal-delay-1">
       <div class="step-num">02</div>
-      <div class="step-title">UŻYJ<br>HASHTAGU</div>
+      <div class="step-title"><span class="lang-pl">UŻYJ<br>HASHTAGU</span><span class="lang-en">USE THE<br>HASHTAG</span></div>
       <p class="step-desc">
-        Taguj swoje treningi #versatilemovement. Twoje zdjęcia i filmy stają się częścią naszej galerii.
+        <span class="lang-pl">Taguj swoje treningi #versatilemovement. Twoje zdjęcia i filmy stają się częścią naszej galerii.</span>
+        <span class="lang-en">Tag your workouts #versatilemovement. Your photos and videos become part of our gallery.</span>
       </p>
       <span class="step-arrow">↗</span>
     </div>
     <div class="step-card reveal reveal-delay-2">
       <div class="step-num">03</div>
-      <div class="step-title">TRENUJ<br>Z NAMI</div>
+      <div class="step-title"><span class="lang-pl">TRENUJ<br>Z NAMI</span><span class="lang-en">TRAIN<br>WITH US</span></div>
       <p class="step-desc">
-        Kup program, weź udział w warsztacie lub dołącz do sesji online. Wspólne treningi budują wspólnotę.
+        <span class="lang-pl">Kup program, weź udział w warsztacie lub dołącz do sesji online. Wspólne treningi budują wspólnotę.</span>
+        <span class="lang-en">Buy a program, join a workshop, or take part in an online session. Training together builds community.</span>
       </p>
       <span class="step-arrow">↗</span>
     </div>
     <div class="step-card reveal reveal-delay-3">
       <div class="step-num">04</div>
-      <div class="step-title">NAPISZ<br>DO NAS</div>
+      <div class="step-title"><span class="lang-pl">NAPISZ<br>DO NAS</span><span class="lang-en">GET IN<br>TOUCH</span></div>
       <p class="step-desc">
-        Masz pytania, pomysły lub chcesz współpracować? Odezwij się. Każda wiadomość czyta się z uwagą.
+        <span class="lang-pl">Masz pytania, pomysły lub chcesz współpracować? Odezwij się. Każda wiadomość czyta się z uwagą.</span>
+        <span class="lang-en">Have questions, ideas, or want to partner with us? Reach out. Every message is read with care.</span>
       </p>
       <span class="step-arrow">↗</span>
     </div>
@@ -955,7 +992,7 @@
 <!-- ===== GALERIA ===== -->
 <section class="galeria">
   <div class="galeria-header">
-    <span class="section-label reveal">— 03 / Galeria</span>
+    <span class="section-label reveal">— / <span class="lang-pl">Galeria</span><span class="lang-en">Gallery</span></span>
     <h2 class="galeria-title reveal reveal-delay-1">
       MOVEMENT <span class="outline">CULTURE</span>
     </h2>
@@ -1032,42 +1069,80 @@
 
 <!-- ===== CTA ===== -->
 <section class="cta-section">
-  <span class="cta-label reveal">— Razem poruszamy świat</span>
+  <span class="cta-label reveal"><span class="lang-pl">— Razem poruszamy świat</span><span class="lang-en">— Together we move the world</span></span>
   <h2 class="cta-big reveal reveal-delay-1">
     MOVE<br>
     <span class="outline">TOGETHER</span>
   </h2>
   <span class="cta-hashtag reveal reveal-delay-2">#versatilemovement</span>
-  <span class="cta-discover reveal reveal-delay-3">Odkrywaj z #versatilemovement</span>
+  <span class="cta-discover reveal reveal-delay-3"><span class="lang-pl">Odkrywaj z #versatilemovement</span><span class="lang-en">Discover with #versatilemovement</span></span>
   <div class="cta-buttons reveal reveal-delay-4">
     <a href="https://www.instagram.com/versatilemovement" class="btn-cream" target="_blank" rel="noopener noreferrer">Instagram</a>
-    <a href="kontakt.html" class="btn-ghost-cream">Napisz do nas</a>
-    <a href="sklep.html" class="btn-ghost-cream">Sklep</a>
+    <a href="kontakt.html" class="btn-ghost-cream"><span class="lang-pl">Napisz do nas</span><span class="lang-en">Get in touch</span></a>
+    <a href="sklep.html" class="btn-ghost-cream"><span class="lang-pl">Sklep</span><span class="lang-en">Shop</span></a>
   </div>
 </section>
+</main>
 
 <!-- FOOTER -->
 <footer class="footer">
-  <span class="footer-copy">© 2026 Versatile Movement. Wszelkie prawa zastrzeżone.</span>
+  <span class="footer-copy">© 2026 Versatile Movement. <span class="lang-pl">Wszelkie prawa zastrzeżone.</span><span class="lang-en">All rights reserved.</span></span>
   <ul class="footer-links">
-    <li><a href="o-nas.html">O Nas</a></li>
-    <li><a href="spolecznosc.html">Społeczność</a></li>
+    <li><a href="o-nas.html"><span class="lang-pl">O Nas</span><span class="lang-en">About Us</span></a></li>
+    <li><a href="spolecznosc.html"><span class="lang-pl">Społeczność</span><span class="lang-en">Community</span></a></li>
     <li><a href="blog.html">Blog</a></li>
-    <li><a href="sklep.html">Sklep</a></li>
-    <li><a href="kontakt.html">Kontakt</a></li>
+    <li><a href="sklep.html"><span class="lang-pl">Sklep</span><span class="lang-en">Shop</span></a></li>
+    <li><a href="kontakt.html"><span class="lang-pl">Kontakt</span><span class="lang-en">Contact</span></a></li>
   </ul>
 </footer>
 
 <script>
+  // LANGUAGE TOGGLE
+  function setSiteLang(lang) {
+    document.documentElement.setAttribute('data-lang', lang);
+    sessionStorage.setItem('vm-lang', lang);
+  }
+  document.querySelectorAll('.lang-toggle').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-lang') || 'pl';
+      setSiteLang(current === 'pl' ? 'en' : 'pl');
+    });
+  });
+
   // Custom cursor
   const cursor = document.getElementById('cursor');
   const cursorRing = document.getElementById('cursor-ring');
+  let usingTouch = false;
+  function showCursor() { document.body.classList.add('cursor-active'); }
+  function hideCursor() { document.body.classList.remove('cursor-active'); }
   document.addEventListener('mousemove', e => {
+    usingTouch = false;
     cursor.style.left = e.clientX + 'px';
     cursor.style.top = e.clientY + 'px';
     cursorRing.style.left = e.clientX + 'px';
     cursorRing.style.top = e.clientY + 'px';
+    showCursor();
   });
+  document.addEventListener('mouseleave', () => { if (!usingTouch) hideCursor(); });
+  document.addEventListener('touchstart', e => {
+    usingTouch = true;
+    const t = e.touches[0];
+    if (t) {
+      cursor.style.left = t.clientX + 'px'; cursor.style.top = t.clientY + 'px';
+      cursorRing.style.left = t.clientX + 'px'; cursorRing.style.top = t.clientY + 'px';
+    }
+    showCursor();
+  }, { passive: true });
+  document.addEventListener('touchmove', e => {
+    const t = e.touches[0];
+    if (t) {
+      cursor.style.left = t.clientX + 'px'; cursor.style.top = t.clientY + 'px';
+      cursorRing.style.left = t.clientX + 'px'; cursorRing.style.top = t.clientY + 'px';
+    }
+  }, { passive: true });
+  document.addEventListener('touchend', hideCursor);
+  document.addEventListener('touchcancel', hideCursor);
+  window.addEventListener('scroll', () => { if (usingTouch) hideCursor(); }, { passive: true });
   document.querySelectorAll('a, button').forEach(el => {
     el.addEventListener('mouseenter', () => {
       cursor.style.transform = 'translate(-50%,-50%) scale(1.8)';
